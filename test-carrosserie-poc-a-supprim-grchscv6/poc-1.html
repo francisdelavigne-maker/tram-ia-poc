@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suivi statut client automatique – TEST Carrosserie POC (à supprimer)</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1c2733;--mut:#6b7785;--line:#e1e6ec;--acc:#0b5ed7;--acc2:#e8f0fe;--ok:#1f9d55;--warn:#d98a00;--bad:#d64545;--info:#0b5ed7}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+header{background:#14222f;color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+header h1{margin:0;font-size:18px;font-weight:600}
+header small{color:#a9b8c6;display:block;font-size:12.5px;font-weight:400;margin-top:2px}
+.badge-demo{background:var(--acc);color:#fff;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-left:4px solid var(--acc);border-radius:8px;padding:14px 16px}
+.kpi .v{font-size:26px;font-weight:700;letter-spacing:-.5px;transition:transform .3s}
+.kpi .v.bump{transform:scale(1.12);color:var(--acc)}
+.kpi .l{color:var(--mut);font-size:13px}
+.kpi .s{font-size:12px;color:var(--ok);margin-top:2px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--line);border-radius:8px;padding:12px 14px;margin-bottom:14px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:20px;cursor:pointer;font-size:13px;font-family:inherit}
+.chip:hover{border-color:var(--acc)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn{background:var(--acc);color:#fff;border:0;padding:11px 18px;border-radius:8px;font-size:14.5px;font-weight:600;cursor:pointer;font-family:inherit;box-shadow:0 2px 6px rgba(11,94,215,.3)}
+.btn:hover{background:#094db0}
+.btn:active{transform:translateY(1px)}
+.btn.sm{padding:7px 12px;font-size:13px;box-shadow:none}
+.btn.ghost{background:#fff;color:var(--acc);border:1px solid var(--acc);box-shadow:none}
+.btn.ghost:hover{background:var(--acc2)}
+.layout{display:grid;grid-template-columns:1fr;gap:14px}
+h2{font-size:16px;margin:0 0 10px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:8px;overflow:hidden}
+.item.new{animation:slide .6s ease;border-color:var(--acc);box-shadow:0 0 0 3px rgba(11,94,215,.15)}
+@keyframes slide{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+.head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 14px;cursor:pointer}
+.head:hover{background:#fafbfd}
+.plate{font-family:ui-monospace,Menlo,Consolas,monospace;background:#14222f;color:#fff;border-radius:4px;padding:2px 8px;font-size:12.5px;letter-spacing:1px}
+.who{font-weight:600}
+.sub{color:var(--mut);font-size:13px;flex:1;min-width:180px}
+.type{font-size:12px;color:var(--mut);background:#eef1f5;border-radius:4px;padding:2px 8px}
+.st{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.st.todo{background:#fff3d6;color:#8a5a00}
+.st.ready{background:var(--acc2);color:var(--info)}
+.st.done{background:#dff4e7;color:#13703c}
+.st.alert{background:#fbe1e1;color:#a22b2b}
+.chev{color:var(--mut);transition:transform .2s}
+.item.open .chev{transform:rotate(90deg)}
+.body{display:none;padding:0 14px 14px;border-top:1px solid var(--line)}
+.item.open .body{display:block}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px}
+@media(max-width:760px){.cols{grid-template-columns:1fr}}
+.box{background:#f8fafc;border:1px solid var(--line);border-radius:6px;padding:10px 12px;font-size:13.5px}
+.box b.t{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.5px;color:var(--mut);margin-bottom:4px}
+.box.rep{background:var(--acc2);border-color:#c5d8fb}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.empty{text-align:center;color:var(--mut);padding:30px;background:var(--card);border:1px dashed var(--line);border-radius:8px}
+.toast{position:fixed;bottom:60px;right:20px;background:#14222f;color:#fff;padding:10px 16px;border-radius:8px;font-size:13.5px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;z-index:5}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;color:var(--mut);font-size:12.5px;padding:16px;border-top:1px solid var(--line)}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>TEST Carrosserie POC (à supprimer)<small>Suivi statut client automatique · Salon-de-Provence</small></h1>
+  </div>
+  <span class="badge-demo">POC · Boîte de réception intelligente</span>
+</header>
+
+<main>
+  <section class="kpis" aria-label="Indicateurs">
+    <div class="kpi"><div class="v" id="k-time">4h30</div><div class="l">sauvées par semaine</div><div class="s">objectif audit : 2 h/jour de mails</div></div>
+    <div class="kpi"><div class="v" id="k-proc">0</div><div class="l">mails classés automatiquement</div><div class="s" id="k-proc-s">sur 45 mails/jour</div></div>
+    <div class="kpi"><div class="v" id="k-wait">0</div><div class="l">réponses à valider (secrétariat)</div><div class="s">validation en 1 clic</div></div>
+    <div class="kpi"><div class="v" id="k-sent">0</div><div class="l">réponses validées aujourd'hui</div><div class="s" id="k-saved">0 min gagnées</div></div>
+  </section>
+
+  <div class="bar">
+    <div class="filters" id="filters"></div>
+    <button class="btn" id="sim">✉ Simuler un mail entrant</button>
+  </div>
+
+  <div class="layout">
+    <div>
+      <h2>Historique des événements – boîte mail du secrétariat</h2>
+      <div class="list" id="list"></div>
+    </div>
+  </div>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "initial":[
+  {"plaque":"FG-412-KL","client":"Mme Martinez","modele":"Renault Clio","type":"statut","subject":"Où en est ma voiture ?","mail":"Bonjour, je n'ai pas de nouvelles de ma Clio déposée lundi après le choc sur le parking. Où en est ma voiture ? Merci.","statut":"Peinture en cours – cabine n°2","rep":"Bonjour Mme Martinez, votre Clio est actuellement en peinture. Livraison prévue jeudi en fin de journée. Nous vous appelons dès qu'elle est prête.","st":"ready","t":"08:12"},
+  {"plaque":"BX-908-RT","client":"M. Garcia","modele":"Peugeot 308","type":"incomplet","subject":"Constat envoyé","mail":"Voici mon constat amiable, je pense avoir tout envoyé pour mon dossier assurance.","statut":"Dossier incomplet – il manque la carte grise et le RIB","rep":"Bonjour M. Garcia, merci pour le constat. Pour lancer la réparation, il nous manque la copie de la carte grise et votre RIB. Pouvez-vous nous les transmettre ?","st":"todo","t":"08:40"},
+  {"plaque":"CD-221-MP","client":"M. Roux","modele":"Citroën C3","type":"expert","subject":"L'expert est-il passé ?","mail":"L'expert est-il passé voir ma C3 ? L'assurance m'a dit qu'il passait cette semaine.","statut":"Passage de l'expert planifié mercredi 14h","rep":"Bonjour M. Roux, l'expert passe mercredi à 14h au garage. Nous vous tenons informé de son avis dès réception du rapport.","st":"ready","t":"09:05"},
+  {"plaque":"—","client":"Fournisseur Peintures du Sud","modele":"Facture F-2291","type":"facture","subject":"Facture n°F-2291 – échéance 30 jours","mail":"Veuillez trouver ci-joint la facture F-2291 d'un montant de 1 284,00 € TTC.","statut":"Facture fournisseur – à transmettre à la comptabilité","rep":"Facture classée et transmise à la comptabilité. Aucune réponse client nécessaire.","st":"done","t":"09:30"},
+  {"plaque":"HK-675-ZA","client":"Mme Bernard","modele":"Dacia Sandero","type":"statut","subject":"Mon véhicule de prêt","mail":"Bonjour, pouvez-vous me dire quand ma Sandero sera prête ? J'ai besoin de savoir pour mon véhicule de prêt.","statut":"En attente d'accord de l'assurance","rep":"Bonjour Mme Bernard, nous attendons l'accord de votre assurance. Votre véhicule de prêt reste à disposition le temps de la réparation.","st":"todo","t":"09:52"},
+  {"plaque":"LM-334-DE","client":"M. Lefèvre","modele":"Ford Fiesta","type":"incomplet","subject":"Photos du choc","mail":"Je vous envoie les photos du choc par mail, c'est bon pour le dossier ?","statut":"Dossier incomplet – déclaration de sinistre manquante","rep":"Bonjour M. Lefèvre, merci pour les photos. Il nous manque la déclaration de sinistre signée pour finaliser votre dossier assurance.","st":"alert","t":"10:15"}
+ ],
+ "scenarios":[
+  {"plaque":"RS-118-NV","client":"Mme Faure","modele":"Toyota Yaris","type":"statut","subject":"Où en est ma réparation ?","mail":"Bonjour, ma Yaris est chez vous depuis une semaine. Où en est ma réparation ?","statut":"Montage des pièces – fin prévue vendredi","rep":"Bonjour Mme Faure, votre Yaris est en phase de montage des pièces. Fin des travaux prévue vendredi. Nous vous prévenons dès qu'elle est prête.","st":"ready"},
+  {"plaque":"TY-902-QC","client":"M. Blanc","modele":"Volkswagen Golf","type":"expert","subject":"Passage de l'expert","mail":"L'assurance dit que l'expert est passé hier, vous avez reçu son rapport ?","statut":"Rapport d'expert reçu – devis accepté","rep":"Bonjour M. Blanc, nous avons bien reçu le rapport de l'expert : le devis est accepté. Les travaux démarrent demain.","st":"ready"},
+  {"plaque":"WN-557-BH","client":"Mme Petit","modele":"Renault Captur","type":"incomplet","subject":"Mon dossier assurance","mail":"Je vous ai tout envoyé pour mon dossier assurance, quand commencez-vous ?","statut":"Dossier incomplet – attestation d'assurance manquante","rep":"Bonjour Mme Petit, pour démarrer il nous manque l'attestation d'assurance en cours de validité. Pouvez-vous nous l'envoyer ?","st":"alert"},
+  {"plaque":"JP-246-FS","client":"M. Moreau","modele":"Peugeot 208","type":"statut","subject":"Ma voiture est-elle prête ?","mail":"Bonjour, ma 208 est-elle prête ? Je peux passer la chercher ce soir ?","statut":"Terminée – contrôle qualité effectué","rep":"Bonjour M. Moreau, votre 208 est prête. Vous pouvez venir la récupérer dès 14h. Nous restituons aussi le véhicule de prêt.","st":"ready"},
+  {"plaque":"—","client":"Fournisseur Carrosserie Pièces 13","modele":"Facture F-7740","type":"facture","subject":"Facture n°F-7740 – pare-chocs","mail":"Ci-joint la facture F-7740 pour la livraison de pare-chocs : 612,50 € TTC.","statut":"Facture fournisseur – à transmettre à la comptabilité","rep":"Facture classée et transmise à la comptabilité. Aucune réponse client nécessaire.","st":"done"}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var data=JSON.parse(document.getElementById('mock-data').textContent);
+  var TYPES={statut:"Statut véhicule",incomplet:"Dossier incomplet",expert:"Expert",facture:"Facture fournisseur"};
+  var STL={todo:"À traiter",ready:"Réponse prête",done:"Traité",alert:"Pièce manquante"};
+  var items=[],filter="all",idx=0,seq=0,proc=0,sent=0;
+
+  function pad(n){return n<10?"0"+n:""+n}
+  function now(){var d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes())}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]})}
+  function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove('show')},2200)}
+  function bump(id){var e=document.getElementById(id);e.classList.add('bump');setTimeout(function(){e.classList.remove('bump')},350)}
+
+  function add(src,isNew){
+    var o={};for(var k in src)o[k]=src[k];
+    o.id=++seq;o.open=false;o.isNew=!!isNew;
+    if(isNew)o.t=now();
+    items.unshift(o);proc++;
+  }
+
+  function counts(){
+    var wait=0;items.forEach(function(i){if(i.st==="ready"||i.st==="todo"||i.st==="alert")wait++});
+    return wait;
+  }
+
+  function kpis(){
+    var pct=Math.round(proc/45*100);
+    document.getElementById('k-proc').textContent=proc;
+    document.getElementById('k-proc-s').textContent=pct+" % des 45 mails/jour";
+    document.getElementById('k-wait').textContent=counts();
+    document.getElementById('k-sent').textContent=sent;
+    document.getElementById('k-saved').textContent=(sent*3)+" min gagnées (≈3 min/mail)";
+    var mins=270+sent*3;
+    document.getElementById('k-time').textContent=Math.floor(mins/60)+"h"+pad(mins%60);
+  }
+
+  function renderFilters(){
+    var f=document.getElementById('filters');
+    var opts=[["all","Tous"],["statut","Statut véhicule"],["incomplet","Dossier incomplet"],["expert","Expert"],["facture","Factures"]];
+    f.innerHTML=opts.map(function(o){return '<button class="chip'+(filter===o[0]?' on':'')+'" data-f="'+o[0]+'">'+o[1]+'</button>'}).join("");
+    Array.prototype.forEach.call(f.querySelectorAll('.chip'),function(b){
+      b.onclick=function(){filter=b.getAttribute('data-f');renderFilters();render()};
+    });
+  }
+
+  function render(){
+    var l=document.getElementById('list');
+    var vis=items.filter(function(i){return filter==="all"||i.type===filter});
+    if(!vis.length){l.innerHTML='<div class="empty">Aucun mail dans cette catégorie.</div>';kpis();return}
+    l.innerHTML=vis.map(function(i){
+      var acts="";
+      if(i.st!=="done"){
+        acts='<button class="btn sm" data-a="send" data-id="'+i.id+'">✔ Valider et envoyer la réponse</button>'+
+             '<button class="btn sm ghost" data-a="alert" data-id="'+i.id+'">Marquer pièce manquante</button>';
+      }else{
+        acts='<span class="st done">Réponse validée</span>'+
+             '<button class="btn sm ghost" data-a="reopen" data-id="'+i.id+'">Rouvrir</button>';
+      }
+      return '<div class="item'+(i.open?' open':'')+(i.isNew?' new':'')+'" id="it'+i.id+'">'+
+        '<div class="head" data-a="toggle" data-id="'+i.id+'">'+
+          '<span class="chev">▶</span>'+
+          '<span class="plate">'+esc(i.plaque)+'</span>'+
+          '<span class="who">'+esc(i.client)+'</span>'+
+          '<span class="sub">'+esc(i.subject)+' · '+esc(i.modele)+'</span>'+
+          '<span class="type">'+TYPES[i.type]+'</span>'+
+          '<span class="st '+i.st+'">'+STL[i.st]+'</span>'+
+          '<span class="sub" style="flex:0;min-width:auto">'+i.t+'</span>'+
+        '</div>'+
+        '<div class="body">'+
+          '<div class="cols">'+
+            '<div class="box"><b class="t">Mail reçu</b>'+esc(i.mail)+'</div>'+
+            '<div class="box"><b class="t">Statut du dossier (détecté)</b>'+esc(i.statut)+'</div>'+
+          '</div>'+
+          '<div class="box rep" style="margin-top:12px"><b class="t">Réponse type proposée – à valider par le secrétariat</b>'+esc(i.rep)+'</div>'+
+          '<div class="actions">'+acts+'</div>'+
+        '</div></div>';
+    }).join("");
+    items.forEach(function(i){i.isNew=false});
+    kpis();
+  }
+
+  function find(id){for(var k=0;k<items.length;k++)if(items[k].id===id)return items[k];return null}
+
+  document.getElementById('list').addEventListener('click',function(e){
+    var el=e.target.closest('[data-a]');if(!el)return;
+    var it=find(parseInt(el.getAttribute('data-id'),10));if(!it)return;
+    var a=el.getAttribute('data-a');
+    if(a==="toggle"){it.open=!it.open}
+    else if(a==="send"){it.st="done";sent++;it.open=true;toast("Réponse validée et envoyée à "+it.client+" (simulation)")}
+    else if(a==="alert"){it.st="alert";it.open=true;toast("Dossier marqué : pièce manquante")}
+    else if(a==="reopen"){it.st="ready";if(sent>0)sent--;it.open=true}
+    render();
+  });
+
+  document.getElementById('sim').onclick=function(){
+    var s=data.scenarios[idx%data.scenarios.length];idx++;
+    var copy={};for(var k in s)copy[k]=s[k];
+    add(copy,true);
+    items[0].open=true;
+    render();bump('k-proc');bump('k-wait');
+    toast("Nouveau mail classé : "+TYPES[copy.type]+" – "+copy.client);
+    var n=document.getElementById('it'+items[0].id);
+    if(n&&n.scrollIntoView)n.scrollIntoView({behavior:"smooth",block:"nearest"});
+  };
+
+  data.initial.slice().reverse().forEach(function(s){add(s,false)});
+  sent=1;
+  items.forEach(function(i){if(i.st==="done")i.open=false});
+  renderFilters();render();
+})();
+</script>
+</body>
+</html>
