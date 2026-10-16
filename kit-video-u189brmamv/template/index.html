@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1920, height=1080" />
+    <script src="gsap.min.js"></script>
+    <style>
+      :root { --bg:#0B1220; --panel:#131C2F; --line:#26324D; --text:#F3F6FB; --muted:#9AA8C2; --amber:#FFB020; --red:#FF6B6B; --green:#3DDC97; }
+      * { margin:0; padding:0; box-sizing:border-box; }
+      html, body { width:1920px; height:1080px; overflow:hidden; background:var(--bg); }
+      #root { position:relative; width:100%; height:100%; font-family:system-ui, -apple-system, sans-serif; color:var(--text); }
+      #bg { position:absolute; inset:0; background:radial-gradient(900px 600px at 15% 10%, #16264a 0%, transparent 70%), radial-gradient(900px 700px at 90% 95%, #2a1d0a 0%, transparent 65%), var(--bg); }
+      #grid { position:absolute; inset:-80px; background-image:linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px); background-size:80px 80px; opacity:.28; }
+      #topbar { z-index:5; position:absolute; left:0; top:0; width:100%; height:80px; display:flex; align-items:center; justify-content:space-between; padding:0 80px; }
+      #brand { height:116px; width:auto; border-radius:12px; display:block; margin-top:34px; }
+      #brand-old { font-weight:800; letter-spacing:.18em; font-size:24px; color:var(--amber); }
+      #chapter { font-size:22px; letter-spacing:.12em; color:var(--muted); font-weight:600; }
+      #progress { position:absolute; left:0; top:0; width:100%; height:6px; background:var(--amber); transform-origin:left center; }
+      .scene { position:absolute; inset:0; }
+      .wrap { position:absolute; left:80px; right:80px; top:110px; bottom:200px; display:flex; flex-direction:column; justify-content:center; gap:44px; }
+      .h2 { font-size:58px; font-weight:800; letter-spacing:-.02em; display:flex; align-items:center; gap:24px; }
+      .kicker { font-size:30px; letter-spacing:.2em; text-transform:uppercase; color:var(--muted); font-weight:700; text-align:center; }
+      .duo { display:flex; align-items:center; justify-content:center; gap:90px; }
+      .big-col { display:flex; flex-direction:column; align-items:center; gap:6px; }
+      .giant { font-size:300px; line-height:1; font-weight:900; letter-spacing:-.04em; }
+      .amber { color:var(--amber); }
+      .sub { font-size:42px; color:var(--muted); font-weight:600; }
+      .times { font-size:120px; color:var(--muted); font-weight:300; }
+      .hook { font-size:60px; font-weight:700; text-align:center; }
+      .hook b { color:var(--amber); }
+      .cards3 { display:flex; gap:40px; }
+      .stat { flex:1; background:var(--panel); border:2px solid var(--line); border-radius:28px; padding:44px 20px; text-align:center; }
+      .stat .v { font-size:140px; font-weight:900; line-height:1.05; color:var(--amber); }
+      .stat .v.up { color:var(--green); }
+      .stat .l { font-size:40px; color:var(--muted); margin-top:10px; font-weight:600; }
+      .goal { font-size:46px; font-weight:700; background:var(--panel); border-left:10px solid var(--amber); border-radius:16px; padding:30px 40px; }
+      .tag { display:inline-block; background:var(--amber); color:#1a1200; font-size:28px; font-weight:900; letter-spacing:.1em; padding:6px 18px; border-radius:10px; margin-right:22px; vertical-align:middle; }
+      .chip-before, .chip-after { font-size:28px; font-weight:900; letter-spacing:.1em; padding:8px 20px; border-radius:10px; color:#10131c; }
+      .chip-before { background:var(--red); } .chip-after { background:var(--green); }
+      .flow { display:flex; align-items:stretch; justify-content:space-between; }
+      .step { width:300px; background:var(--panel); border:2px solid var(--line); border-radius:24px; padding:30px 22px; text-align:center; display:flex; flex-direction:column; gap:18px; align-items:center; }
+      .step .ic { font-size:72px; } .step .t { font-size:32px; font-weight:600; line-height:1.25; }
+      .arr { align-self:center; font-size:54px; color:var(--amber); }
+      .alert { align-self:center; font-size:46px; font-weight:800; color:var(--red); border:3px solid var(--red); border-radius:18px; padding:18px 44px; }
+      .eq { display:flex; align-items:center; justify-content:center; gap:50px; }
+      .term { text-align:center; } .term .v { font-size:170px; font-weight:900; line-height:1; }
+      .term .l { font-size:38px; color:var(--muted); font-weight:600; margin-top:6px; }
+      .op { font-size:110px; color:var(--amber); font-weight:300; }
+      .half { display:flex; align-items:center; justify-content:center; gap:60px; }
+      .op2 { font-size:90px; color:var(--muted); font-weight:700; }
+      .res .v { font-size:200px; font-weight:900; line-height:1; } .res .l { font-size:44px; font-weight:700; }
+      .foot { text-align:center; font-size:34px; color:var(--muted); }
+      .sol { gap:36px; }
+      .card { flex:1; background:var(--panel); border:2px solid var(--line); border-radius:28px; padding:36px 34px; display:flex; flex-direction:column; gap:16px; }
+      .num { width:84px; height:84px; border-radius:50%; background:var(--amber); color:#1a1200; font-size:52px; font-weight:900; display:flex; align-items:center; justify-content:center; }
+      .ct { font-size:48px; font-weight:800; } .cd { font-size:36px; color:var(--text); line-height:1.3; }
+      .cm { font-size:32px; color:var(--green); font-weight:700; margin-top:auto; }
+      .banner { align-self:center; font-size:56px; font-weight:700; } .banner b { color:var(--amber); }
+      .after { display:flex; gap:80px; align-items:center; }
+      .bars { flex:1.3; display:flex; flex-direction:column; gap:30px; }
+      .barrow { display:flex; align-items:center; gap:28px; } .bl { width:230px; font-size:38px; color:var(--muted); font-weight:700; }
+      .bar { height:110px; border-radius:20px; display:flex; align-items:center; padding-left:30px; font-size:44px; font-weight:800; color:#10131c; transform-origin:left center; }
+      .bar.red { width:760px; background:var(--red); } .bar.green { width:380px; background:var(--green); }
+      .note6 { font-size:30px; color:var(--muted); padding-left:258px; }
+      .checks { flex:1; list-style:none; display:flex; flex-direction:column; gap:30px; }
+      .checks li { font-size:46px; font-weight:700; background:var(--panel); border:2px solid var(--line); border-radius:20px; padding:26px 34px; }
+      .checks li::before { content:"✓"; color:var(--green); margin-right:22px; font-weight:900; }
+      .r2 { display:flex; gap:56px; align-items:stretch; }
+      .cal { width:380px; background:var(--amber); color:#1a1200; border-radius:32px; padding:34px; text-align:center; display:flex; flex-direction:column; justify-content:center; }
+      .cal .m { font-size:36px; font-weight:800; letter-spacing:.14em; } .cal .d { font-size:230px; font-weight:900; line-height:1; }
+      .cal .w { font-size:50px; font-weight:900; letter-spacing:.14em; } .cal .r { font-size:30px; font-weight:800; margin-top:20px; letter-spacing:.08em; }
+      .cols { flex:1; display:flex; flex-direction:column; gap:30px; }
+      .col { background:var(--panel); border:2px solid var(--line); border-radius:24px; padding:28px 36px; }
+      .col .ch { font-size:34px; font-weight:800; color:var(--amber); letter-spacing:.04em; margin-bottom:14px; text-transform:uppercase; }
+      .col ul { list-style:none; display:flex; flex-direction:column; gap:10px; } .col li { font-size:38px; font-weight:600; }
+      .col li::before { content:"›"; color:var(--amber); margin-right:16px; font-weight:900; }
+      .closing { text-align:center; font-size:84px; font-weight:900; }
+      #caps { position:absolute; left:0; bottom:0; width:100%; height:190px; display:flex; align-items:center; justify-content:center; }
+      .cap { position:absolute; left:120px; right:120px; text-align:center; font-size:42px; font-weight:600; line-height:1.3; color:var(--text); background:rgba(8,12,22,.78); padding:16px 30px; border-radius:18px; opacity:0; }
+    </style>
+  </head>
+  <body>
+    <div id="root" data-composition-id="main" data-start="0" data-duration="120" data-width="1920" data-height="1080">
+      <div id="bg" class="clip" data-start="0" data-duration="120" data-track-index="0"><div id="grid"></div></div>
+      <section id="s1" class="clip scene" data-start="0" data-duration="9.6" data-track-index="1"><div class="wrap"><div class="kicker">Pour Luc Durand · Garage Durand</div>
+<div class="duo">
+  <div class="big-col" id="col1a"><div class="giant"><span id="n60">0</span></div><div class="sub">emails par jour</div></div>
+  <div class="times">=</div>
+  <div class="big-col" id="col1b"><div class="giant amber">2&nbsp;h</div><div class="sub">par jour à les traiter</div></div>
+</div>
+<div class="hook" id="hook1">Et si on en récupérait <b>la moitié</b> ?</div></div></section>
+      <section id="s2" class="clip scene" data-start="9.6" data-duration="18.42" data-track-index="1"><div class="wrap"><div class="h2">Ce que vous m’avez dit au premier rendez-vous</div>
+<div class="cards3">
+  <div class="stat"><div class="v">6</div><div class="l">personnes dans l’équipe</div></div>
+  <div class="stat"><div class="v">700&nbsp;k€</div><div class="l">de chiffre d’affaires</div></div>
+  <div class="stat"><div class="v up">↗</div><div class="l">une activité qui grossit</div></div>
+</div>
+<div class="goal" id="goal2"><span class="tag">OBJECTIF 2026</span> Moins d’emails · Moins de temps perdu sur les devis</div></div></section>
+      <section id="s3" class="clip scene" data-start="28.02" data-duration="18.61" data-track-index="1"><div class="wrap"><div class="h2"><span class="chip-before">AVANT</span> Une journée type, tout à la main</div>
+<div class="flow">
+  <div class="step"><div class="ic">✉</div><div class="t">Un email arrive</div></div>
+  <div class="arr">→</div>
+  <div class="step"><div class="ic">👁</div><div class="t">Lecture et tri : devis ? fournisseur ? rendez-vous ?</div></div>
+  <div class="arr">→</div>
+  <div class="step"><div class="ic">✍</div><div class="t">Réponse écrite</div></div>
+  <div class="arr">→</div>
+  <div class="step"><div class="ic">📄</div><div class="t">Devis accepté : repérer, lister les pièces</div></div>
+  <div class="arr">→</div>
+  <div class="step"><div class="ic">🔧</div><div class="t">Commande et suivi des pièces</div></div>
+</div>
+<div class="alert" id="alert3">⚠ Un oubli = une réparation en retard</div></div></section>
+      <section id="s4" class="clip scene" data-start="46.63" data-duration="12.4" data-track-index="1"><div class="wrap"><div class="h2">Faisons le calcul</div>
+<div class="eq">
+  <div class="term"><div class="v">2&nbsp;h</div><div class="l">par jour</div></div>
+  <div class="op">×</div>
+  <div class="term"><div class="v">5</div><div class="l">jours</div></div>
+  <div class="op">=</div>
+  <div class="term"><div class="v">10&nbsp;h</div><div class="l">d’emails par semaine</div></div>
+</div>
+<div class="half" id="half4"><div class="op2">÷ 2</div><div class="res"><div class="v amber">5&nbsp;h</div><div class="l">récupérées chaque semaine</div></div></div>
+<div class="foot" id="foot4">Estimation prudente, à valider : sans compter les devis ni les commandes de pièces.</div></div></section>
+      <section id="s5" class="clip scene" data-start="59.03" data-duration="25.36" data-track-index="1"><div class="wrap"><div class="h2"><span class="chip-after">LA SOLUTION</span> Trois étapes, vous gardez la main</div>
+<div class="cards3 sol">
+  <div class="card" id="c5a"><div class="num">1</div><div class="ct">Tri des emails</div><div class="cd">Chaque message est classé, un brouillon de réponse est prêt.</div><div class="cm">Quick win · démarrage rapide</div></div>
+  <div class="card" id="c5b"><div class="num">2</div><div class="ct">Devis</div><div class="cd">Le devis est préparé automatiquement.</div><div class="cm">Vous validez : environ 2 min</div></div>
+  <div class="card" id="c5c"><div class="num">3</div><div class="ct">Commandes de pièces</div><div class="cd">Commande lancée dès l’acceptation du devis.</div><div class="cm">Alerte en cas de retard</div></div>
+</div>
+<div class="banner" id="ban5">L’IA prépare · <b>Vous décidez</b></div></div></section>
+      <section id="s6" class="clip scene" data-start="84.39" data-duration="11.7" data-track-index="1"><div class="wrap"><div class="h2"><span class="chip-after">APRÈS</span> Votre matin, demain</div>
+<div class="after">
+  <div class="bars">
+    <div class="barrow"><div class="bl">Aujourd’hui</div><div class="bar red" id="bar6a"><span>2 h d’emails</span></div></div>
+    <div class="barrow"><div class="bl">Objectif</div><div class="bar green" id="bar6b"><span>1 h</span></div></div>
+    <div class="note6">Cible à valider avec un chronométrage d’une semaine</div>
+  </div>
+  <ul class="checks">
+    <li id="k1">Boîte mail déjà triée</li>
+    <li id="k2">Brouillons de réponse prêts</li>
+    <li id="k3">Résumé des urgences</li>
+  </ul>
+</div></div></section>
+      <section id="s7" class="clip scene" data-start="96.09" data-duration="23.91" data-track-index="1"><div class="wrap"><div class="r2">
+  <div class="cal" id="cal7"><div class="m">OCT. 2026</div><div class="d">19</div><div class="w">LUNDI</div><div class="r">RENDEZ-VOUS 2</div></div>
+  <div class="cols">
+    <div class="col" id="col7a"><div class="ch">Lundi, je vous montre</div><ul>
+      <li>Le tri sur un vrai exemple d’emails de votre garage</li>
+      <li>Un pilote simple pour démarrer</li>
+      <li>L’offre : ce que je fais, le prix, les garanties</li></ul></div>
+    <div class="col" id="col7b"><div class="ch">D’ici là, à préparer</div><ul>
+      <li>Combien de devis par semaine ?</li>
+      <li>Quel logiciel de devis utilisez-vous ?</li>
+      <li>Chez quels fournisseurs commandez-vous ?</li></ul></div>
+  </div>
+</div>
+<div class="closing" id="close7">À lundi, Luc.</div></div></section>
+      <div id="topbar" class="clip" data-start="0" data-duration="120" data-track-index="2"><img id="brand" src="assets/logo.svg" alt="TRAM IA" /><div id="chapter">CONTEXTE</div></div>
+      <div id="progress" class="clip" data-start="0" data-duration="120" data-track-index="2"></div>
+      <div id="caps" class="clip" data-start="0" data-duration="120" data-track-index="3"></div>
+      <audio id="vo" src="assets/vo.wav" data-start="0" data-duration="120" data-track-index="5" data-volume="1"></audio>
+    </div>
+    <script>
+      const B = [0, 9.6, 28.02, 46.63, 59.03, 84.39, 96.09, 120];
+      const CAPS = [[1.0, 1.57, "Luc, soixante emails par jour."], [2.57, 3.91, "Deux heures de votre journée, englouties avant même d'avoir touché une clé."], [6.48, 2.92, "Et si je vous disais qu'on peut en récupérer la moitié ?"], [9.85, 0.89, "Je suis Francis."], [10.74, 3.73, "Lors de notre premier échange, vous m'avez parlé du Garage Durand :"], [14.47, 4.9, "six personnes, sept cent mille euros de chiffre d'affaires, et une activité qui grossit."], [19.36, 3.12, "C'est une bonne nouvelle, mais votre équipe est saturée."], [22.48, 2.34, "Votre objectif pour deux mille vingt-six :"], [24.82, 3.0, "moins d'emails, et moins de temps perdu sur les devis."], [28.27, 2.02, "Aujourd'hui, voilà ce qui se passe."], [30.29, 0.92, "Un email arrive."], [31.21, 4.5, "Vous le lisez, vous décidez si c'est un devis, un fournisseur, un rendez-vous."], [35.71, 0.81, "Vous répondez."], [36.51, 1.96, "Puis, quand un devis est accepté :"], [38.47, 3.98, "il faut le repérer, lister les pièces, passer la commande, la suivre."], [42.45, 0.86, "Tout à la main."], [43.32, 3.11, "Et un oubli, c'est une réparation qui prend du retard."], [46.88, 0.9, "Faisons le calcul."], [47.78, 2.29, "Deux heures par jour, cinq jours par semaine :"], [50.07, 1.0, "dix heures d'emails."], [51.07, 3.54, "Si l'on n'en récupère que la moitié, cela fait cinq heures par semaine."], [54.6, 4.24, "Une estimation prudente, qui ne compte même pas les devis ni les commandes de pièces."], [59.28, 2.57, "Voici comment on s'y prend, en trois étapes."], [61.85, 2.05, "Un : le tri automatique des emails."], [63.9, 3.8, "Chaque message est classé, et une réponse est préparée pour vous."], [67.7, 0.99, "Deux : les devis."], [68.69, 3.39, "L'outil prépare le devis, vous le validez en deux minutes."], [72.09, 1.87, "Trois : les commandes de pièces."], [73.96, 6.32, "Dès qu'un devis est accepté, la commande est lancée et suivie, avec une alerte si une pièce prend du retard."], [80.27, 1.75, "Vous gardez toujours la main :"], [82.03, 2.16, "l'IA prépare, c'est vous qui décidez."], [84.64, 1.24, "Imaginez votre matin :"], [85.88, 4.05, "une boîte mail déjà triée, des brouillons prêts, un résumé des urgences."], [89.93, 2.36, "Visons une heure d'emails au lieu de deux."], [92.29, 2.19, "Et plus de temps pour ce qui rapporte :"], [94.48, 1.41, "l'atelier et vos clients."], [96.34, 3.9, "Le plus important arrive lundi dix-neuf octobre, à notre deuxième rendez-vous."], [100.24, 6.19, "Je vous montrerai le tri sur un vrai exemple d'emails de votre garage, comment on démarre par un pilote simple, et l'offre :"], [106.43, 2.45, "ce que je fais pour vous, le prix, les garanties."], [108.88, 1.9, "D'ici là, trois questions à préparer :"], [110.78, 5.49, "combien de devis par semaine, quel logiciel de devis vous utilisez, et chez quels fournisseurs vous commandez."], [116.27, 0.65, "À lundi, Luc."]];
+      const CHAP = ["L’ENJEU","CONTEXTE","AVANT","LE CALCUL","LA SOLUTION","APRÈS","PROCHAINE ÉTAPE"];
+      const capsEl = document.getElementById("caps");
+      CAPS.forEach((c,i)=>{ const d=document.createElement("div"); d.className="cap"; d.id="cap"+i; d.textContent=c[2]; capsEl.appendChild(d); });
+      const tl = gsap.timeline({ paused:true });
+      const E = "power3.out";
+      const K = [1.017, 1.06, 0.978, 0.948, 1.095, 1.14, 0.921];
+      const inn = (sel, t, vars={}) => tl.fromTo(sel, { opacity:0, y:36 }, Object.assign({ opacity:1, y:0, duration:.7, ease:E }, vars), t);
+      // progress + grid drift
+      tl.fromTo("#progress", { scaleX:0 }, { scaleX:1, duration:120, ease:"none" }, 0);
+      tl.fromTo("#grid", { x:0, y:0 }, { x:-80, y:-80, duration:120, ease:"none" }, 0);
+      // chapters + scene exits
+      CHAP.forEach((c,i)=>{ tl.set("#chapter", { textContent:c }, B[i]+0.01); if(i<6) tl.to("#s"+(i+1)+" .wrap", { opacity:0, y:-20, duration:.35, ease:"power2.in" }, B[i+1]-0.4); });
+      // captions
+      CAPS.forEach((c,i)=>{ tl.fromTo("#cap"+i, { opacity:0 }, { opacity:1, duration:.25 }, c[0]); tl.to("#cap"+i, { opacity:0, duration:.2 }, c[0]+c[1]-0.35); });
+      // S1
+      let t=B[0];
+      inn("#s1 .kicker", t+.2*K[0]);
+      const o={v:0}; tl.to(o, { v:60, duration:2.2, ease:"power2.out", onUpdate:()=>{ document.getElementById("n60").textContent=Math.round(o.v); } }, t+.9*K[0]);
+      inn("#s1 .times", t+3.0*K[0], { duration:.5 });
+      tl.fromTo("#col1b", { opacity:0, y:60 }, { opacity:1, y:0, duration:.7, ease:E }, t+3.3*K[0]);
+      tl.fromTo("#col1a .sub", { opacity:.0 }, { opacity:1, duration:.5 }, t+2.4*K[0]);
+      inn("#hook1", t+6.2*K[0]);
+      // S2
+      t=B[1];
+      inn("#s2 .h2", t+.9*K[1]);
+      tl.fromTo("#s2 .stat", { opacity:0, y:50, scale:.92 }, { opacity:1, y:0, scale:1, duration:.7, ease:"back.out(1.4)", stagger:2.2*K[1] }, t+3.0*K[1]);
+      inn("#goal2", t+11.5*K[1]);
+      // S3
+      t=B[2];
+      inn("#s3 .h2", t+.8*K[2]);
+      const st3=[1.4,3.8,8.4,10.6,14.0];
+      document.querySelectorAll("#s3 .step").forEach((e,i)=>{ tl.fromTo(e, { opacity:0, y:40 }, { opacity:1, y:0, duration:.6, ease:E }, t+st3[i]*K[2]); });
+      document.querySelectorAll("#s3 .arr").forEach((e,i)=>{ tl.fromTo(e, { opacity:0, x:-14 }, { opacity:1, x:0, duration:.4 }, t+st3[i+1]*K[2]-.35); });
+      tl.fromTo("#alert3", { opacity:0, scale:.85 }, { opacity:1, scale:1, duration:.5, ease:"back.out(1.8)" }, t+15.6*K[2]);
+      // S4
+      t=B[3];
+      inn("#s4 .h2", t+.5*K[3]);
+      const tm=document.querySelectorAll("#s4 .eq > *");
+      tl.fromTo(tm[0], {opacity:0,y:40}, {opacity:1,y:0,duration:.6,ease:E}, t+1.0*K[3]);
+      tl.fromTo(tm[1], {opacity:0}, {opacity:1,duration:.3}, t+2.4*K[3]);
+      tl.fromTo(tm[2], {opacity:0,y:40}, {opacity:1,y:0,duration:.6,ease:E}, t+2.7*K[3]);
+      tl.fromTo(tm[3], {opacity:0}, {opacity:1,duration:.3}, t+4.6*K[3]);
+      tl.fromTo(tm[4], {opacity:0,y:40,scale:.9}, {opacity:1,y:0,scale:1,duration:.7,ease:"back.out(1.4)"}, t+4.9*K[3]);
+      tl.fromTo("#half4", {opacity:0,y:50}, {opacity:1,y:0,duration:.8,ease:E}, t+7.0*K[3]);
+      tl.fromTo("#half4 .res .v", {scale:.85}, {scale:1,duration:.8,ease:"back.out(2)"}, t+7.0*K[3]);
+      inn("#foot4", t+10.0*K[3], {duration:.6});
+      // S5
+      t=B[4];
+      inn("#s5 .h2", t+.8*K[4]);
+      inn("#c5a", t+3.0*K[4]); inn("#c5b", t+8.6*K[4]); inn("#c5c", t+13.8*K[4]);
+      tl.fromTo("#ban5", {opacity:0,scale:.9}, {opacity:1,scale:1,duration:.6,ease:"back.out(1.6)"}, t+19.4*K[4]);
+      // S6
+      t=B[5];
+      inn("#s6 .h2", t+.5*K[5]);
+      tl.fromTo("#bar6a", {scaleX:0}, {scaleX:1,duration:1.0,ease:"power2.out"}, t+1.3*K[5]);
+      tl.fromTo("#bar6b", {scaleX:0}, {scaleX:1,duration:1.0,ease:"power2.out"}, t+2.6*K[5]);
+      tl.fromTo("#s6 .note6", {opacity:0}, {opacity:1,duration:.5}, t+3.8*K[5]);
+      ["#k1","#k2","#k3"].forEach((k,i)=>inn(k, t+2.0*K[5]+i*1.7*K[5], {duration:.5}));
+      // S7
+      t=B[6];
+      tl.fromTo("#cal7", {opacity:0,scale:.85,rotate:-4}, {opacity:1,scale:1,rotate:0,duration:.8,ease:"back.out(1.6)"}, t+.5*K[6]);
+      inn("#col7a", t+4.8*K[6], {duration:.6}); inn("#col7b", t+14.2*K[6], {duration:.6});
+      tl.fromTo("#close7", {opacity:0,scale:.9}, {opacity:1,scale:1,duration:.8,ease:"back.out(1.4)"}, t+21.8*K[6]);
+      tl.to("#cal7", {scale:1.04,duration:1.2,yoyo:true,repeat:3,ease:"sine.inOut"}, t+8*K[6]);
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
