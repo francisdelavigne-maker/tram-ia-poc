@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 320" width="640" height="320" xmlns:c2pa="http://c2pa.org/manifest">
+  <rect width="640" height="320" fill="#0E0E10"/>
+  <!-- Typo : chaque lettre au-dessus de sa station -->
+  <g font-family="Montserrat, 'Helvetica Neue', Arial, sans-serif" font-size="92" font-weight="800" fill="#FFFFFF" text-anchor="middle">
+    <text x="150" y="160">T</text>
+    <text x="260" y="160">R</text>
+    <text x="370" y="160">A</text>
+    <text x="480" y="160">M</text>
+  </g>
+  <!-- La ligne : 4 stations puis décollage (ROI) -->
+  <path d="M100 200 H480 L540 200 Q565 200 578 176" fill="none" stroke="#3A3A42" stroke-width="6" stroke-linecap="round"/>
+  <path d="M480 200 L540 200 Q565 200 578 176" fill="none" stroke="#FFB000" stroke-width="6" stroke-linecap="round"/>
+  <polygon points="568,170 588,158 586,182" fill="#FFB000"/>
+  <g stroke="#FFB000" stroke-width="5">
+    <circle cx="150" cy="200" r="10" fill="#0E0E10"/>
+    <circle cx="260" cy="200" r="10" fill="#0E0E10"/>
+    <circle cx="370" cy="200" r="10" fill="#0E0E10"/>
+    <circle cx="480" cy="200" r="11" fill="#FFB000"/>
+  </g>
+  <g font-family="Montserrat, 'Helvetica Neue', Arial, sans-serif" font-size="12" font-weight="600" letter-spacing="2" fill="#C9C9D1" text-anchor="middle">
+    <text x="150" y="236">TRAQUER</text>
+    <text x="260" y="236">RECOMMANDER</text>
+    <text x="370" y="236">ACTIVER</text>
+    <text x="480" y="236" fill="#FFB000">MESURER</text>
+  </g>
+  <text x="320" y="286" font-family="Montserrat, 'Helvetica Neue', Arial, sans-serif" font-size="11" font-weight="500" letter-spacing="4" fill="#FFB000" text-anchor="middle">AGENCE D'AUTOMATISATION IA</text>
+</svg>
