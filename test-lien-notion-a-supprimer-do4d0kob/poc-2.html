@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POC – Tri des emails et brouillons de réponse – Carrosserie</title>
+<style>
+:root{--bg:#f4f6f8;--card:#fff;--ink:#1c2733;--mut:#6b7886;--line:#dde3ea;--acc:#0f5c8c;--acc2:#e8f1f8;--ok:#1f8a4c;--warn:#c77d0a;--bad:#c0392b;--info:#5b4bb7}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+header{background:#12202d;color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+header h1{margin:0;font-size:18px;font-weight:600}
+header .sub{font-size:13px;color:#9fb3c6}
+.badge{background:var(--acc);color:#fff;padding:4px 10px;border-radius:12px;font-size:12px}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--acc)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--acc);transition:transform .3s}
+.kpi .v.bump{transform:scale(1.15)}
+.kpi .l{font-size:12.5px;color:var(--mut);margin-top:2px}
+.kpi .n{font-size:11.5px;color:var(--mut);margin-top:6px;border-top:1px dashed var(--line);padding-top:5px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.bar h2{margin:0;font-size:17px}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;padding:7px 13px;color:var(--ink)}
+button:hover{border-color:var(--acc)}
+.cta{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600;padding:10px 18px;box-shadow:0 2px 6px rgba(15,92,140,.3)}
+.cta:hover{background:#0b4a72}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.filters button{font-size:13px;padding:5px 11px;border-radius:16px}
+.filters button.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.item.new{animation:slide .6s ease;border-color:var(--acc);box-shadow:0 0 0 3px rgba(15,92,140,.15)}
+@keyframes slide{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+.head{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:11px 14px;cursor:pointer}
+.head:hover{background:#fafbfc}
+.cat{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:10px;background:var(--acc2);color:var(--acc);white-space:nowrap}
+.cat.assurance{background:#ece9fa;color:var(--info)}
+.cat.expert{background:#fdf1dc;color:var(--warn)}
+.cat.fournisseur{background:#e6f4ec;color:var(--ok)}
+.cat.autre{background:#eee;color:#555}
+.subj{font-weight:600;font-size:14.5px}
+.from{font-size:12.5px;color:var(--mut)}
+.st{font-size:12px;font-weight:600;padding:3px 10px;border-radius:10px;white-space:nowrap}
+.st.nouveau{background:#fdecea;color:var(--bad)}
+.st.brouillon{background:#fdf1dc;color:var(--warn)}
+.st.envoye{background:#e6f4ec;color:var(--ok)}
+.st.relance{background:#ece9fa;color:var(--info)}
+.body{display:none;padding:0 14px 14px;border-top:1px solid var(--line);background:#fafbfc}
+.item.open .body{display:block}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:12px}
+@media(max-width:700px){.cols{grid-template-columns:1fr}.head{grid-template-columns:1fr auto}.head .cat{grid-column:1}}
+.box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13.5px}
+.box h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.box.draft{border-left:3px solid var(--acc)}
+.meta{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px;font-size:12.5px;color:var(--mut)}
+.meta span{background:#fff;border:1px solid var(--line);border-radius:6px;padding:2px 8px}
+.actions{margin-top:10px;display:flex;flex-wrap:wrap;gap:8px}
+.actions .ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.empty{text-align:center;color:var(--mut);padding:24px;background:#fff;border:1px dashed var(--line);border-radius:10px}
+.note{font-size:12px;color:var(--mut);margin-top:14px}
+footer{text-align:center;color:var(--mut);font-size:12.5px;padding:18px;border-top:1px solid var(--line)}
+.toast{position:fixed;right:18px;bottom:18px;background:#12202d;color:#fff;padding:10px 16px;border-radius:8px;font-size:13.5px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none}
+.toast.show{opacity:1;transform:none}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>TEST Lien Notion (à supprimer) – Carrosserie automobile</h1>
+    <div class="sub">104 Avenue de l'Europe, 13300 Salon-de-Provence · Boîte mail de l'atelier</div>
+  </div>
+  <span class="badge">Tri des emails &amp; brouillons de réponse</span>
+</header>
+
+<main>
+  <section class="kpis" aria-label="Indicateurs de performance">
+    <div class="kpi"><div class="v" id="k-temps">4h30</div><div class="l">sauvées par semaine</div><div class="n">Objectif audit : environ 5 h/semaine</div></div>
+    <div class="kpi"><div class="v" id="k-traites">0</div><div class="l">emails triés aujourd'hui</div><div class="n">Volume cible : environ 45 emails/jour</div></div>
+    <div class="kpi"><div class="v" id="k-brouillons">0</div><div class="l">brouillons prêts à relire</div><div class="n">Jamais d'envoi automatique</div></div>
+    <div class="kpi"><div class="v" id="k-taux">72 %</div><div class="l">brouillons envoyés sans modification</div><div class="n">Temps emails : 2 h/jour → environ 1 h</div></div>
+    <div class="kpi"><div class="v" id="k-relances">0</div><div class="l">relances d'expert en attente</div><div class="n">Rappel quotidien automatique</div></div>
+  </section>
+
+  <div class="bar">
+    <h2>Boîte de réception de l'atelier</h2>
+    <button class="cta" id="btn-sim">✉ Simuler un mail entrant</button>
+  </div>
+
+  <div class="filters" id="filters"></div>
+  <div class="list" id="list"></div>
+  <p class="note">Cliquez sur un email pour voir le brouillon préparé. Le carrossier ou l'accueil relit, modifie puis valide : rien ne part sans validation humaine.</p>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+"initial":[
+{"cat":"client","from":"Mme Martin (particulier)","subj":"Où en est ma voiture ? Clio blanche","plaque":"GH-482-LP","dossier":"Choc pare-chocs arrière","statut":"nouveau","body":"Bonjour, je voudrais savoir où en est ma Clio. Pouvez-vous me dire quand je peux la récupérer ? Merci.","draft":"Bonjour Mme Martin, votre Clio est actuellement en cabine de peinture. La livraison est prévue en fin de semaine. Nous vous préviendrons dès qu'elle sera prête. Cordialement, l'atelier.","note":"Statut lu dans le dossier"},
+{"cat":"assurance","from":"MAIF – gestionnaire sinistres","subj":"Dossier sinistre 24-77812 : pièces manquantes","plaque":"FD-219-ZA","dossier":"Choc aile avant droite","statut":"brouillon","body":"Pour poursuivre l'instruction, merci de nous transmettre les photos de l'aile avant droite et le devis signé.","draft":"Bonjour, veuillez trouver ci-joint les photos de l'aile avant droite. Le devis signé vous parviendra dans la journée. Cordialement, l'atelier.","note":"Pièces jointes à ajouter par l'accueil"},
+{"cat":"expert","from":"Cabinet Expertis – M. Roux","subj":"Passage de l'expert : créneau jeudi ?","plaque":"BK-903-RT","dossier":"Choc porte conducteur","statut":"relance","body":"Je peux passer jeudi à 14h pour le véhicule BK-903-RT. Pouvez-vous confirmer ?","draft":"Bonjour M. Roux, jeudi 14h convient parfaitement. Le véhicule sera accessible à l'atelier. Cordialement, l'atelier.","note":"Relance expert à J+2 programmée"},
+{"cat":"fournisseur","from":"Peintures Méditerranée","subj":"Facture F-2291 – peinture et vernis","plaque":"","dossier":"Facture fournisseur","statut":"envoye","body":"Veuillez trouver ci-joint la facture F-2291 pour la livraison de peinture et vernis.","draft":"Bonjour, facture bien reçue, transmise à la comptabilité. Cordialement, l'atelier.","note":"Classée dans Factures fournisseurs"},
+{"cat":"client","from":"M. Dupuis (particulier)","subj":"Véhicule de courtoisie pendant la réparation","plaque":"AZ-554-KM","dossier":"Choc pare-chocs avant","statut":"brouillon","body":"Bonjour, aurai-je un véhicule de prêt pendant l'immobilisation de ma voiture ?","draft":"Bonjour M. Dupuis, un véhicule de courtoisie est disponible dès le dépôt de votre voiture. Nous vous remettrons les clés avec l'état des lieux. Cordialement, l'atelier.","note":"Vérifier le planning de prêt"},
+{"cat":"assurance","from":"AXA – gestion sinistres","subj":"Accord de prise en charge – dossier 8841-C","plaque":"MN-120-QS","dossier":"Choc aile arrière gauche","statut":"envoye","body":"Nous vous confirmons l'accord de prise en charge. Vous pouvez lancer les réparations.","draft":"Bonjour, accord bien reçu. Les réparations démarrent dès demain. Cordialement, l'atelier.","note":"Dossier passé en réparation"}
+],
+"scenarios":[
+{"cat":"client","from":"M. Bernard (particulier)","subj":"Où en est ma réparation ?","plaque":"CE-771-JD","dossier":"Choc pare-chocs avant","body":"Bonjour, ça fait trois jours que j'ai déposé ma voiture, où en est la réparation ?","draft":"Bonjour M. Bernard, votre véhicule est en cours de réparation (carrosserie). Nous vous informons dès qu'il passe en peinture. Cordialement, l'atelier.","note":"Statut lu dans le dossier"},
+{"cat":"expert","from":"Cabinet Expertis – M. Roux","subj":"L'expert est-il passé sur le dossier HV-204 ?","plaque":"HV-204-PA","dossier":"Choc aile avant gauche","body":"Pouvez-vous me confirmer que le véhicule est accessible pour expertise demain matin ?","draft":"Bonjour M. Roux, le véhicule est accessible demain dès 8h. Cordialement, l'atelier.","note":"Passage expert ajouté au planning"},
+{"cat":"assurance","from":"Groupama – sinistres","subj":"Dossier incomplet : photos manquantes","plaque":"TR-338-LN","dossier":"Choc porte arrière","body":"Les photos transmises sont insuffisantes, merci de compléter le dossier.","draft":"Bonjour, nous complétons le dossier avec les photos demandées sous 24 h. Cordialement, l'atelier.","note":"Dossier incomplet signalé"},
+{"cat":"fournisseur","from":"Peintures Méditerranée","subj":"Facture F-2307 – vernis et diluant","plaque":"","dossier":"Facture fournisseur","body":"Facture F-2307 en pièce jointe, échéance à 30 jours.","draft":"Bonjour, facture bien reçue, transmise à la comptabilité. Cordialement, l'atelier.","note":"Échéance notée à 30 jours"},
+{"cat":"client","from":"Mme Lefèvre (particulier)","subj":"Demande de devis après un choc","plaque":"PL-615-XB","dossier":"Choc pare-chocs arrière","body":"Bonjour, j'ai eu un choc sur le pare-chocs arrière. Pouvez-vous me proposer un rendez-vous pour un devis ?","draft":"Bonjour Mme Lefèvre, nous vous proposons un rendez-vous mardi à 9h pour établir le devis. Cordialement, l'atelier.","note":"Créneau issu du planning"},
+{"cat":"autre","from":"Mairie de Salon-de-Provence","subj":"Convention d'accès voirie atelier","plaque":"","dossier":"Courrier administratif","body":"Veuillez trouver la convention annuelle à retourner signée.","draft":"Bonjour, nous avons bien reçu la convention et vous la retournons signée sous huit jours. Cordialement, l'atelier.","note":"À transmettre au gérant"}
+]
+}
+</script>
+
+<script>
+(function(){
+  var data = JSON.parse(document.getElementById('mock-data').textContent);
+  var items = [], idx = 0, filter = 'tous', uid = 0, traites = 0, tempsMin = 270;
+  var labels = {nouveau:'Nouveau',brouillon:'Brouillon prêt',envoye:'Envoyé',relance:'Relance expert'};
+  var cats = ['tous','client','assurance','expert','fournisseur','autre'];
+  var catLabels = {tous:'Tous',client:'Client',assurance:'Assurance',expert:'Expert',fournisseur:'Fournisseur',autre:'Autre'};
+  var $ = function(id){return document.getElementById(id);};
+
+  function toast(msg){
+    var t = $('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast.h); toast.h = setTimeout(function(){t.classList.remove('show');},2200);
+  }
+  function bump(id){
+    var e = $(id); e.classList.add('bump');
+    setTimeout(function(){e.classList.remove('bump');},300);
+  }
+  function mk(src, statut, isNew){
+    uid++;
+    return {id:uid, cat:src.cat, from:src.from, subj:src.subj, plaque:src.plaque||'', dossier:src.dossier,
+      body:src.body, draft:src.draft, note:src.note, statut:statut||src.statut||'brouillon',
+      open:false, isNew:!!isNew, heure:isNew ? hhmm() : ''};
+  }
+  function hhmm(){
+    var d = new Date(); return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);
+  }
+  function esc(s){
+    return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});
+  }
+  function kpis(){
+    var brouillons = items.filter(function(i){return i.statut==='brouillon';}).length;
+    var relances = items.filter(function(i){return i.statut==='relance';}).length;
+    $('k-traites').textContent = traites;
+    $('k-brouillons').textContent = brouillons;
+    $('k-relances').textContent = relances;
+    var m = tempsMin, h = Math.floor(m/60), r = m%60;
+    $('k-temps').textContent = h+'h'+(r<10?'0':'')+r;
+    var taux = Math.min(86, 72 + Math.floor(traites/2));
+    $('k-taux').textContent = taux+' %';
+  }
+  function renderFilters(){
+    var f = $('filters'); f.innerHTML = '';
+    cats.forEach(function(c){
+      var b = document.createElement('button');
+      b.textContent = catLabels[c] + (c==='tous' ? ' ('+items.length+')' : ' ('+items.filter(function(i){return i.cat===c;}).length+')');
+      if(filter===c) b.className = 'on';
+      b.onclick = function(){filter = c; render();};
+      f.appendChild(b);
+    });
+  }
+  function render(){
+    renderFilters();
+    var l = $('list'); l.innerHTML = '';
+    var vis = items.filter(function(i){return filter==='tous' || i.cat===filter;});
+    if(!vis.length){
+      l.innerHTML = '<div class="empty">Aucun email dans cette catégorie.</div>';
+    }
+    vis.forEach(function(it){
+      var d = document.createElement('div');
+      d.className = 'item' + (it.open?' open':'') + (it.isNew?' new':'');
+      d.innerHTML =
+        '<div class="head">'+
+          '<span class="cat '+it.cat+'">'+catLabels[it.cat]+'</span>'+
+          '<div><div class="subj">'+esc(it.subj)+'</div><div class="from">'+esc(it.from)+(it.heure?' · reçu à '+it.heure:'')+'</div></div>'+
+          '<span class="st '+it.statut+'">'+labels[it.statut]+'</span>'+
+        '</div>'+
+        '<div class="body">'+
+          '<div class="meta">'+
+            (it.plaque?'<span>Plaque : '+esc(it.plaque)+'</span>':'')+
+            '<span>Dossier : '+esc(it.dossier)+'</span>'+
+            '<span>Rattaché automatiquement</span>'+
+          '</div>'+
+          '<div class="cols">'+
+            '<div class="box"><h4>Email reçu</h4>'+esc(it.body)+'</div>'+
+            '<div class="box draft"><h4>Brouillon de réponse (IA)</h4>'+esc(it.draft)+'</div>'+
+          '</div>'+
+          '<div class="meta"><span>'+esc(it.note)+'</span></div>'+
+          '<div class="actions"></div>'+
+        '</div>';
+      d.querySelector('.head').onclick = function(){it.open = !it.open; it.isNew = false; render();};
+      var a = d.querySelector('.actions');
+      if(it.statut!=='envoye'){
+        var ok = document.createElement('button'); ok.className='ok'; ok.textContent='Relire et envoyer';
+        ok.onclick = function(){it.statut='envoye'; tempsMin += 8; traites++; kpis(); render(); toast('Réponse validée et envoyée par l\'humain');};
+        a.appendChild(ok);
+      }
+      if(it.statut!=='relance' && it.cat!=='fournisseur'){
+        var rl = document.createElement('button'); rl.textContent='Programmer une relance';
+        rl.onclick = function(){it.statut='relance'; kpis(); render(); toast('Relance programmée dans le rappel quotidien');};
+        a.appendChild(rl);
+      }
+      if(it.statut==='envoye'){
+        var rb = document.createElement('button'); rb.textContent='Rouvrir en brouillon';
+        rb.onclick = function(){it.statut='brouillon'; kpis(); render();};
+        a.appendChild(rb);
+      }
+      l.appendChild(d);
+    });
+  }
+
+  data.initial.forEach(function(s){items.push(mk(s));});
+  traites = items.length;
+  items.reverse();
+  kpis(); render();
+
+  $('btn-sim').onclick = function(){
+    var s = data.scenarios[idx % data.scenarios.length]; idx++;
+    var it = mk(s, 'nouveau', true);
+    items.unshift(it);
+    filter = 'tous';
+    traites++; tempsMin += 6;
+    kpis(); render();
+    bump('k-traites'); bump('k-temps');
+    toast('Nouvel email trié, rattaché au dossier, brouillon prêt');
+    setTimeout(function(){
+      it.statut = 'brouillon'; it.isNew = false; kpis(); render(); bump('k-brouillons');
+    }, 1400);
+  };
+})();
+</script>
+</body>
+</html>
