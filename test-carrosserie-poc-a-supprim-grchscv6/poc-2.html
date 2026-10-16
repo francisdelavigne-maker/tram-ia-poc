@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Relances dossiers incomplets et passage de l'expert – POC TEST Carrosserie POC</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1c2533;--mute:#6b7688;--line:#e1e6ee;--accent:#0f5fa8;--accent2:#0b4a85;--ok:#1f8a4c;--warn:#d98a00;--bad:#c93a3a;--info:#5a49c9}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;min-height:100vh;display:flex;flex-direction:column}
+header{background:#14213a;color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+header h1{font-size:18px;font-weight:700}
+header .sub{font-size:13px;color:#aebbd3}
+.badge-top{background:var(--accent);padding:4px 10px;border-radius:20px;font-size:12px;font-weight:600}
+main{flex:1;max-width:1100px;width:100%;margin:0 auto;padding:20px 16px 30px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--accent)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--accent2);transition:transform .3s}
+.kpi .v.bump{transform:scale(1.15)}
+.kpi .l{font-size:12.5px;color:var(--mute);margin-top:2px}
+.kpi.alert{border-top-color:var(--bad)}
+.kpi.alert .v{color:var(--bad)}
+.kpi.good{border-top-color:var(--ok)}
+.kpi.good .v{color:var(--ok)}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.toolbar h2{font-size:17px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;cursor:pointer;border:none;border-radius:8px}
+.btn-main{background:var(--accent);color:#fff;padding:10px 16px;font-weight:600;font-size:14px;box-shadow:0 2px 6px rgba(15,95,168,.3)}
+.btn-main:hover{background:var(--accent2)}
+.btn-main:active{transform:translateY(1px)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{background:#fff;border:1px solid var(--line);padding:6px 11px;font-size:12.5px;color:var(--mute);border-radius:20px}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--mute);border-radius:10px;overflow:hidden}
+.item.s-manquant{border-left-color:var(--bad)}
+.item.s-relance{border-left-color:var(--warn)}
+.item.s-expert{border-left-color:var(--info)}
+.item.s-complet{border-left-color:var(--ok)}
+.item.new{animation:slideIn .6s ease}
+@keyframes slideIn{0%{opacity:0;transform:translateY(-18px);background:#e8f2fc}100%{opacity:1;transform:none;background:#fff}}
+.head{display:grid;grid-template-columns:1fr auto;gap:8px;padding:12px 14px;cursor:pointer;align-items:center}
+.head:hover{background:#fafbfd}
+.t1{font-weight:600;font-size:14.5px}
+.t2{font-size:12.5px;color:var(--mute);margin-top:2px}
+.right{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.tag{font-size:11.5px;font-weight:600;padding:3px 9px;border-radius:12px;color:#fff;white-space:nowrap}
+.tag.manquant{background:var(--bad)}
+.tag.relance{background:var(--warn)}
+.tag.expert{background:var(--info)}
+.tag.complet{background:var(--ok)}
+.arrow{color:var(--mute);transition:transform .2s;font-size:12px}
+.item.open .arrow{transform:rotate(90deg)}
+.detail{display:none;padding:4px 14px 14px;border-top:1px solid var(--line);background:#fbfcfe;font-size:13.5px}
+.item.open .detail{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-top:10px}
+.box h4{font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mute);margin-bottom:6px}
+.pieces{list-style:none}
+.pieces li{padding:3px 0;display:flex;gap:8px}
+.pieces .ko{color:var(--bad);font-weight:600}
+.pieces .ok{color:var(--ok)}
+.msg{background:#fff;border:1px dashed var(--line);border-radius:8px;padding:9px 11px;font-size:13px;color:#33405a;white-space:pre-wrap}
+.row-btn{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.row-btn button{padding:7px 12px;font-size:13px;font-weight:600;background:#fff;border:1px solid var(--accent);color:var(--accent)}
+.row-btn button:hover{background:var(--accent);color:#fff}
+.row-btn button.ok{border-color:var(--ok);color:var(--ok)}
+.row-btn button.ok:hover{background:var(--ok);color:#fff}
+.empty{text-align:center;color:var(--mute);padding:26px;background:#fff;border:1px dashed var(--line);border-radius:10px}
+.toast{position:fixed;bottom:56px;right:18px;background:#14213a;color:#fff;padding:11px 16px;border-radius:8px;font-size:13.5px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;max-width:320px;z-index:5}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;font-size:12.5px;color:var(--mute);padding:14px;border-top:1px solid var(--line);background:#fff}
+@media(max-width:600px){.head{grid-template-columns:1fr}.right{justify-content:flex-start}header h1{font-size:16px}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>TEST Carrosserie POC</h1>
+    <div class="sub">Relances dossiers incomplets &amp; passage de l'expert</div>
+  </div>
+  <span class="badge-top">Priorité 2 · Suivi des dossiers assurance</span>
+</header>
+
+<main>
+  <section class="kpis" id="kpis"></section>
+
+  <div class="toolbar">
+    <h2>Historique des événements</h2>
+    <div class="actions">
+      <div class="filters" id="filters"></div>
+      <button class="btn-main" id="btnSim">⚡ Simuler un dossier détecté incomplet</button>
+    </div>
+  </div>
+
+  <section class="list" id="list"></section>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "initial":[
+  {"id":"D-2401","client":"Mme Martin","veh":"Peugeot 308","immat":"GH-482-PL","assur":"MAIF","statut":"manquant","quand":"Il y a 10 min","pieces":[["Constat amiable signé",0],["Photos des dégâts",1],["Carte grise",1],["Permis de conduire",0]],"note":"Choc arrière sur parking. Constat reçu sans la signature du tiers."},
+  {"id":"D-2398","client":"M. Roux","veh":"Renault Clio V","immat":"FK-219-ZA","assur":"AXA","statut":"relance","quand":"Il y a 1 h","pieces":[["Constat amiable signé",1],["Photos des dégâts",1],["Carte grise",0],["Attestation d'assurance",1]],"note":"Relance client envoyée hier, carte grise toujours manquante (J+2)."},
+  {"id":"D-2395","client":"Mme Bernard","veh":"Citroën C3","immat":"EQ-731-BD","assur":"Groupama","statut":"expert","quand":"Il y a 2 h","pieces":[["Constat amiable signé",1],["Photos des dégâts",1],["Carte grise",1],["Devis chiffré",1]],"note":"Dossier complet. Passage de l'expert à planifier chez Groupama."},
+  {"id":"D-2390","client":"M. Garcia","veh":"Tesla Model 3","immat":"GT-005-LM","assur":"Allianz","statut":"relance","quand":"Hier","pieces":[["Constat amiable signé",1],["Photos des dégâts",1],["Devis chiffré",1],["Accord de prise en charge assurance",0]],"note":"Expert passé lundi, rapport d'expertise non reçu. Relance assurance (J+3)."},
+  {"id":"D-2386","client":"Mme Lefèvre","veh":"Dacia Sandero","immat":"FN-648-RT","assur":"Matmut","statut":"manquant","quand":"Hier","pieces":[["Constat amiable signé",1],["Photos des dégâts",0],["Carte grise",1],["Relevé d'identité bancaire",0]],"note":"Photos floues, impossible de chiffrer le choc."},
+  {"id":"D-2381","client":"M. Petit","veh":"Volkswagen Golf","immat":"GA-127-CH","assur":"MMA","statut":"complet","quand":"Il y a 2 jours","pieces":[["Constat amiable signé",1],["Photos des dégâts",1],["Carte grise",1],["Rapport d'expertise",1]],"note":"Expert passé, dossier complet, véhicule prêt à entrer en réparation."},
+  {"id":"D-2377","client":"Mme Dubois","veh":"Toyota Yaris","immat":"FZ-390-KP","assur":"Crédit Agricole Assurances","statut":"expert","quand":"Il y a 2 jours","pieces":[["Constat amiable signé",1],["Photos des dégâts",1],["Carte grise",1],["Devis chiffré",1]],"note":"Rendez-vous expert fixé jeudi 9h. Rappel automatique prévu la veille."}
+ ],
+ "scenarios":[
+  {"client":"M. Moreau","veh":"Ford Fiesta","immat":"GC-554-VN","assur":"AXA","statut":"manquant","pieces":[["Constat amiable signé",1],["Photos des dégâts",0],["Carte grise",1],["Attestation d'assurance",0]],"note":"Mail entrant : pièces manquantes détectées automatiquement (photos, attestation)."},
+  {"client":"Mme Faure","veh":"Renault Captur","immat":"GD-871-SE","assur":"Groupama","statut":"expert","pieces":[["Constat amiable signé",1],["Photos des dégâts",1],["Carte grise",1],["Devis chiffré",1]],"note":"Dossier complet : proposition de créneaux envoyée à l'expert."},
+  {"client":"M. Lambert","veh":"Mercedes Classe A","immat":"FX-063-BQ","assur":"Allianz","statut":"relance","pieces":[["Constat amiable signé",0],["Photos des dégâts",1],["Carte grise",1],["Permis de conduire",1]],"note":"Constat non signé après 48 h : relance client + alerte au gérant."},
+  {"client":"Mme Girard","veh":"Peugeot 2008","immat":"GB-418-MJ","assur":"MAIF","statut":"manquant","pieces":[["Constat amiable signé",1],["Photos des dégâts",1],["Carte grise",0],["Relevé d'identité bancaire",0]],"note":"Carte grise et RIB manquants : relance client rédigée, à valider."},
+  {"client":"M. Chevalier","veh":"Audi A3","immat":"FV-277-AL","assur":"Matmut","statut":"relance","pieces":[["Constat amiable signé",1],["Photos des dégâts",1],["Devis chiffré",1],["Rapport d'expertise",0]],"note":"Expert passé il y a 4 jours, rapport en retard : relance assurance prête."}
+ ],
+ "statuts":{"manquant":"Pièces manquantes","relance":"Relance en cours","expert":"Expert à planifier","complet":"Dossier complet"}
+}
+</script>
+
+<script>
+(function(){
+  var data = JSON.parse(document.getElementById('mock-data').textContent);
+  var dossiers = data.initial.map(function(d){return JSON.parse(JSON.stringify(d));});
+  var scen = data.scenarios, labels = data.statuts;
+  var scenIdx = 0, nextId = 2402, filtre = 'tous', openId = null, newId = null;
+  var stats = {heures: 3.0, relances: 12, retards: 2, expertPlan: 5, dossiersSuivis: dossiers.length};
+
+  function el(id){return document.getElementById(id);}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+
+  function fmtH(h){
+    var m = Math.round(h*60), hh = Math.floor(m/60), mm = m%60;
+    return hh+'h'+(mm<10?'0':'')+mm;
+  }
+
+  function renderKpis(){
+    var manq = dossiers.filter(function(d){return d.statut==='manquant'||d.statut==='relance';}).length;
+    var exp = dossiers.filter(function(d){return d.statut==='expert';}).length;
+    var html = '';
+    html += kpi(fmtH(stats.heures)+'/sem','Sauvées sur le suivi des dossiers (objectif 3 h)','good','k1');
+    html += kpi(stats.relances,'Relances client / assurance envoyées ce mois','', 'k2');
+    html += kpi(manq,'Dossiers incomplets à relancer','alert','k3');
+    html += kpi(exp,'Passages d\'expert à planifier','', 'k4');
+    html += kpi(stats.retards,'Retards d\'expertise signalés au gérant','alert','k5');
+    el('kpis').innerHTML = html;
+  }
+  function kpi(v,l,cls,id){
+    return '<div class="kpi '+cls+'"><div class="v" id="'+id+'">'+esc(v)+'</div><div class="l">'+esc(l)+'</div></div>';
+  }
+  function bump(id){
+    var e = el(id); if(!e) return;
+    e.classList.add('bump');
+    setTimeout(function(){e.classList.remove('bump');},350);
+  }
+
+  function renderFilters(){
+    var keys = ['tous','manquant','relance','expert','complet'];
+    el('filters').innerHTML = keys.map(function(k){
+      var txt = k==='tous' ? 'Tous ('+dossiers.length+')' : labels[k]+' ('+dossiers.filter(function(d){return d.statut===k;}).length+')';
+      return '<button class="chip'+(filtre===k?' on':'')+'" data-f="'+k+'">'+esc(txt)+'</button>';
+    }).join('');
+  }
+
+  function msgType(d){
+    var manquantes = d.pieces.filter(function(p){return !p[1];}).map(function(p){return '- '+p[0];});
+    if(d.statut==='expert'){
+      return 'Bonjour,\nLe dossier '+d.id+' ('+d.veh+', '+d.immat+') est complet. Pouvez-vous nous proposer un créneau de passage de l\'expert cette semaine ?\nCordialement, TEST Carrosserie POC';
+    }
+    if(d.statut==='complet'){
+      return 'Bonjour,\nVotre dossier '+d.id+' est complet. Nous planifions l\'entrée de votre véhicule en réparation et vous tiendrons informé.\nCordialement, TEST Carrosserie POC';
+    }
+    return 'Bonjour,\nPour poursuivre le dossier '+d.id+' ('+d.veh+', '+d.immat+'), il nous manque :\n'+(manquantes.join('\n')||'- (aucune pièce)')+'\nMerci de nous les transmettre rapidement afin d\'éviter tout retard de réparation.\nCordialement, TEST Carrosserie POC';
+  }
+
+  function renderList(){
+    var rows = dossiers.filter(function(d){return filtre==='tous'||d.statut===filtre;});
+    if(!rows.length){ el('list').innerHTML = '<div class="empty">Aucun dossier dans cette catégorie.</div>'; return; }
+    el('list').innerHTML = rows.map(function(d){
+      var isOpen = openId===d.id;
+      var cls = 'item s-'+d.statut+(isOpen?' open':'')+(newId===d.id?' new':'');
+      var pieces = d.pieces.map(function(p){
+        return '<li>'+(p[1]?'<span class="ok">✔</span>':'<span class="ko">✖</span>')+'<span>'+esc(p[0])+(p[1]?'':' <b style="color:var(--bad)">— manquant</b>')+'</span></li>';
+      }).join('');
+      var btns = '';
+      if(d.statut==='manquant'||d.statut==='relance') btns += '<button data-a="relancer" data-id="'+d.id+'">✉ Relancer client / assurance</button>';
+      if(d.statut==='expert') btns += '<button data-a="planifier" data-id="'+d.id+'">📅 Planifier le passage de l\'expert</button>';
+      if(d.statut!=='complet') btns += '<button class="ok" data-a="complet" data-id="'+d.id+'">✔ Marquer dossier complet</button>';
+      if(d.statut==='complet') btns += '<button data-a="rouvrir" data-id="'+d.id+'">↺ Rouvrir le dossier</button>';
+      return '<article class="'+cls+'">'+
+        '<div class="head" data-toggle="'+d.id+'">'+
+          '<div><div class="t1">'+esc(d.id)+' · '+esc(d.client)+' — '+esc(d.veh)+' <span style="color:var(--mute);font-weight:400">('+esc(d.immat)+')</span></div>'+
+          '<div class="t2">Assureur : '+esc(d.assur)+' · '+esc(d.quand)+'</div></div>'+
+          '<div class="right"><span class="tag '+d.statut+'">'+esc(labels[d.statut])+'</span><span class="arrow">▶</span></div>'+
+        '</div>'+
+        '<div class="detail">'+
+          '<div class="grid">'+
+            '<div class="box"><h4>Complétude du dossier assurance</h4><ul class="pieces">'+pieces+'</ul></div>'+
+            '<div class="box"><h4>Analyse automatique</h4><p>'+esc(d.note)+'</p>'+
+            '<h4 style="margin-top:10px">Message proposé (à valider)</h4><div class="msg">'+esc(msgType(d))+'</div></div>'+
+          '</div>'+
+          '<div class="row-btn">'+btns+'</div>'+
+        '</div></article>';
+    }).join('');
+    newId = null;
+  }
+
+  function toast(msg){
+    var t = el('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast.t); toast.t = setTimeout(function(){t.classList.remove('show');},2600);
+  }
+
+  function renderAll(){ renderKpis(); renderFilters(); renderList(); }
+
+  el('list').addEventListener('click', function(e){
+    var b = e.target.closest('button[data-a]');
+    if(b){
+      var d = dossiers.find(function(x){return x.id===b.getAttribute('data-id');});
+      if(!d) return;
+      var a = b.getAttribute('data-a');
+      if(a==='relancer'){
+        d.statut='relance'; d.quand='À l\'instant';
+        stats.relances++; stats.heures += 0.1;
+        toast('Relance envoyée (simulation) pour '+d.id);
+      } else if(a==='planifier'){
+        d.note='Créneau expert proposé : jeudi 9h. Rappel automatique la veille.'; d.quand='À l\'instant';
+        stats.expertPlan++; stats.heures += 0.1;
+        toast('Passage de l\'expert planifié (simulation) – '+d.id);
+      } else if(a==='complet'){
+        d.pieces.forEach(function(p){p[1]=1;}); d.statut='complet'; d.note='Dossier complété, prêt pour la réparation.'; d.quand='À l\'instant';
+        toast('Dossier '+d.id+' marqué complet');
+      } else if(a==='rouvrir'){
+        d.statut='relance'; d.note='Dossier rouvert pour vérification.'; toast('Dossier '+d.id+' rouvert');
+      }
+      renderAll(); bump('k1'); bump('k2'); bump('k3'); bump('k4');
+      return;
+    }
+    var h = e.target.closest('[data-toggle]');
+    if(h){
+      var id = h.getAttribute('data-toggle');
+      openId = (openId===id) ? null : id;
+      renderList();
+    }
+  });
+
+  el('filters').addEventListener('click', function(e){
+    var c = e.target.closest('[data-f]');
+    if(!c) return;
+    filtre = c.getAttribute('data-f');
+    renderFilters(); renderList();
+  });
+
+  el('btnSim').addEventListener('click', function(){
+    var s = scen[scenIdx % scen.length]; scenIdx++;
+    var d = JSON.parse(JSON.stringify(s));
+    d.id = 'D-'+(nextId++); d.quand = 'À l\'instant';
+    dossiers.unshift(d);
+    newId = d.id; openId = d.id; filtre = 'tous';
+    stats.dossiersSuivis++; stats.heures += 0.2;
+    if(d.statut==='relance'){ stats.relances++; stats.retards++; }
+    if(d.statut==='expert'){ stats.expertPlan++; }
+    renderAll();
+    bump('k1'); bump('k3'); bump('k4'); bump('k5');
+    toast('Nouveau dossier analysé : '+d.id+' – '+labels[d.statut]);
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>
