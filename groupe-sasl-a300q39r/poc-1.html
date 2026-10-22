@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GROUPE SASL – Développement commercial B2B : pipeline de prospection assistée</title>
+<style>
+:root{
+  --bg:#f3f5f8;--card:#ffffff;--ink:#1b2430;--muted:#6b7686;--line:#e2e7ee;
+  --accent:#c2410c;--accent-d:#9a3412;--accent-l:#fff1e8;--navy:#1e293b;
+  --new:#2563eb;--contact:#0891b2;--rdv:#7c3aed;--devis:#d97706;--won:#15803d;--lost:#6b7280;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+header{background:var(--navy);color:#fff;padding:16px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;border-bottom:4px solid var(--accent)}
+.brand{display:flex;align-items:center;gap:14px}
+.logo{width:42px;height:42px;border-radius:8px;background:var(--accent);display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;letter-spacing:.5px}
+.brand h1{font-size:19px;font-weight:700}
+.brand p{font-size:12.5px;color:#aab6c8}
+.who{font-size:12.5px;color:#aab6c8;text-align:right}
+.who b{color:#fff}
+main{max-width:1180px;margin:0 auto;padding:22px 18px 40px}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.8px;color:var(--muted);margin:26px 0 12px;font-weight:700}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--accent)}
+.kpi .v{font-size:27px;font-weight:800;color:var(--navy)}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:2px}
+.kpi .d{font-size:11.5px;color:var(--won);margin-top:4px;font-weight:600}
+.kpi.flash{animation:flash .9s}
+@keyframes flash{0%{background:#ffe3d1}100%{background:var(--card)}}
+.horizon{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-top:12px}
+.horizon .top{display:flex;justify-content:space-between;font-size:13px;margin-bottom:8px}
+.bar{height:14px;background:#e9edf3;border-radius:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ea580c);width:0;transition:width .8s}
+.bar-note{font-size:12px;color:var(--muted);margin-top:6px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:20px;font-size:13px;cursor:pointer}
+.chip:hover{border-color:var(--accent)}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn{background:var(--accent);color:#fff;border:0;padding:11px 20px;border-radius:8px;font-size:14.5px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(194,65,12,.35)}
+.btn:hover{background:var(--accent-d)}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:#fff;color:var(--ink);border:1px solid var(--line);box-shadow:none;padding:7px 12px;font-size:13px;font-weight:600}
+.btn.sec:hover{border-color:var(--accent);color:var(--accent)}
+.btn.ok{background:var(--won);box-shadow:none;padding:7px 12px;font-size:13px}
+.list{display:flex;flex-direction:column;gap:10px}
+.empty{padding:26px;text-align:center;color:var(--muted);background:var(--card);border:1px dashed var(--line);border-radius:10px}
+.lead{background:var(--card);border:1px solid var(--line);border-radius:10px;border-left:5px solid var(--lost);overflow:hidden}
+.lead.new-in{animation:slidein .6s ease-out}
+@keyframes slidein{0%{opacity:0;transform:translateY(-18px) scale(.98);box-shadow:0 0 0 3px rgba(194,65,12,.5)}100%{opacity:1;transform:none;box-shadow:none}}
+.lead[data-s="nouveau"]{border-left-color:var(--new)}
+.lead[data-s="contacte"]{border-left-color:var(--contact)}
+.lead[data-s="rdv"]{border-left-color:var(--rdv)}
+.lead[data-s="devis"]{border-left-color:var(--devis)}
+.lead[data-s="confirme"]{border-left-color:var(--won)}
+.lead[data-s="perdu"]{border-left-color:var(--lost)}
+.head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:13px 16px;cursor:pointer}
+.head:hover{background:#fafbfd}
+.hmain{flex:1;min-width:210px}
+.hmain .n{font-weight:700;font-size:15.5px}
+.hmain .s{font-size:12.5px;color:var(--muted)}
+.score{width:44px;height:44px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;color:#fff;background:var(--lost)}
+.score.hi{background:var(--won)}.score.mid{background:var(--devis)}
+.badge{padding:4px 10px;border-radius:14px;font-size:12px;font-weight:700;color:#fff;white-space:nowrap}
+.b-nouveau{background:var(--new)}.b-contacte{background:var(--contact)}.b-rdv{background:var(--rdv)}.b-devis{background:var(--devis)}.b-confirme{background:var(--won)}.b-perdu{background:var(--lost)}
+.arrow{color:var(--muted);transition:transform .2s;font-size:13px}
+.lead.open .arrow{transform:rotate(90deg)}
+.body{display:none;padding:4px 16px 16px;border-top:1px solid var(--line);background:#fcfcfd}
+.lead.open .body{display:block}
+.grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:10px 24px;margin:12px 0}
+.f span{display:block;font-size:11.5px;text-transform:uppercase;letter-spacing:.5px;color:var(--muted)}
+.f b{font-weight:600}
+.msg{background:var(--accent-l);border:1px solid #fbd5bd;border-radius:8px;padding:11px 13px;font-size:13.5px;margin:8px 0}
+.msg small{display:block;font-size:11.5px;color:var(--accent-d);font-weight:700;text-transform:uppercase;margin-bottom:4px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:center}
+select{padding:7px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:#fff}
+.rgpd{font-size:11.5px;color:var(--muted);margin-top:8px}
+.sources{display:flex;gap:8px;flex-wrap:wrap;margin-top:6px}
+.src{font-size:11.5px;background:#eef2f7;border-radius:6px;padding:3px 8px;color:#41506a}
+.toast{position:fixed;bottom:60px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--navy);color:#fff;padding:11px 18px;border-radius:8px;font-size:13.5px;opacity:0;pointer-events:none;transition:.3s;z-index:9}
+.toast.show{opacity:1;transform:translateX(-50%)}
+footer{text-align:center;color:var(--muted);font-size:12.5px;padding:18px;border-top:1px solid var(--line);background:#fff}
+@media(max-width:600px){header{padding:14px}.who{text-align:left}.kpi .v{font-size:23px}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">SASL</div>
+    <div>
+      <h1>GROUPE SASL</h1>
+      <p>Développement commercial B2B · Prospection assistée &amp; pipeline de leads</p>
+    </div>
+  </div>
+  <div class="who">Support technique &amp; artistique · Événementiel<br><b>Franck LORUSSO</b>, Dirigeant · validation humaine avant tout envoi</div>
+</header>
+
+<main>
+  <h2>Performance commerciale (semaine en cours)</h2>
+  <div class="kpis" id="kpis"></div>
+  <div class="horizon">
+    <div class="top"><span><b>Visibilité sur les chantiers à 6 mois</b></span><span id="hzTxt"></span></div>
+    <div class="bar"><i id="hzBar"></i></div>
+    <div class="bar-note">Objectif : verrouiller les chantiers 6 mois à l'avance et soutenir +30 % de CA tout en gardant 45 % de marge.</div>
+  </div>
+
+  <h2>Pipeline de prospection B2B</h2>
+  <div class="toolbar">
+    <div class="filters" id="filters"></div>
+    <button class="btn" id="simBtn">⚡ Simuler un prospect détecté par l'agent IA</button>
+  </div>
+  <div class="list" id="list"></div>
+</main>
+
+<div class="toast" id="toast"></div>
+<footer>Démonstration – données fictives – TRAM IA</footer>
+
+<script type="application/json" id="mock-data">
+{
+ "leads":[
+  {"id":1,"nom":"Agence Phocéa Events","contact":"Camille Roux, Directrice de production","type":"Agence événementielle","prestation":"Sonorisation + lumière, soirée de gala","lieu":"Marseille (13)","date":"2027-03-12","budget":"18 000 €","score":92,"statut":"rdv","source":"Veille appels d'offres","msg":"Bonjour Camille, GROUPE SASL accompagne les agences marseillaises sur la sonorisation et la lumière de soirées de gala. Nous aimerions vous présenter nos références et notre création lumière.","canal":"LinkedIn","relance":"J+10 : 14 nov."},
+  {"id":2,"nom":"Salon Provence Expo","contact":"Marc Giraud, Responsable technique","type":"Organisateur de salons","prestation":"Électricité et écrans LED pour salon professionnel","lieu":"Aix-en-Provence (13)","date":"2027-02-04","budget":"26 500 €","score":88,"statut":"devis","source":"Recommandation client","msg":"Bonjour Marc, suite à notre échange, voici notre proposition pour l'électricité et les écrans LED de votre salon, avec contrôle de marge intégré.","canal":"Email","relance":"J+5 : 9 nov."},
+  {"id":3,"nom":"Théâtre des Salins","contact":"Léa Fontaine, Régisseuse générale","type":"Salle de spectacle","prestation":"Mapping vidéo sur façade, festival d'hiver","lieu":"Martigues (13)","date":"2027-01-22","budget":"14 000 €","score":81,"statut":"contacte","source":"Prospection LinkedIn","msg":"Bonjour Léa, nous réalisons des créations de mapping sur façade pour des festivals. Souhaitez-vous découvrir nos réalisations ?","canal":"LinkedIn","relance":"J+3 : 3 nov."},
+  {"id":4,"nom":"Mairie de Salon-de-Provence","contact":"Service Culture et Animation","type":"Collectivité","prestation":"Scène + son pour fête de la ville","lieu":"Salon-de-Provence (13)","date":"2027-06-19","budget":"22 000 €","score":76,"statut":"nouveau","source":"Appel d'offres détecté","msg":"Bonjour, GROUPE SASL peut répondre à votre consultation pour le montage scène et la sonorisation de la fête de la ville.","canal":"Email","relance":"À planifier"},
+  {"id":5,"nom":"Sud Congrès Organisation","contact":"Nadia Benali, Cheffe de projet","type":"Organisateur de congrès","prestation":"Écrans LED et lumière scénique, congrès médical","lieu":"Marseille (13)","date":"2027-04-08","budget":"31 000 €","score":90,"statut":"confirme","source":"Prospection LinkedIn","msg":"Chantier confirmé : congrès médical avril 2027, 3 jours de montage et exploitation.","canal":"LinkedIn","relance":"Aucune, chantier verrouillé"},
+  {"id":6,"nom":"Festival Les Nuits d'Eygalières","contact":"Paul Mercier, Directeur","type":"Festival","prestation":"Lumière et sonorisation, 3 soirées","lieu":"Eygalières (13)","date":"2027-07-10","budget":"16 500 €","score":69,"statut":"perdu","source":"Veille marché","msg":"Prospect perdu : budget finalement attribué à un concurrent régional.","canal":"Email","relance":"Réactivation en janvier"}
+ ],
+ "scenarios":[
+  {"nom":"Palais des Congrès d'Avignon","contact":"Sophie Marchand, Responsable événements","type":"Organisateur de congrès","prestation":"Montage scène et écrans LED, convention d'entreprise","lieu":"Avignon (84)","date":"2027-05-14","budget":"28 000 €","score":87,"source":"Appel d'offres détecté","msg":"Bonjour Sophie, GROUPE SASL peut assurer le montage scène et les écrans LED de votre convention. Voici nos références comparables.","canal":"Email"},
+  {"nom":"Agence Riviera Live","contact":"Antoine Delmas, Gérant","type":"Agence événementielle","prestation":"Création lumière et mapping, lancement de produit","lieu":"Nice (06)","date":"2027-03-30","budget":"19 500 €","score":83,"source":"Prospection LinkedIn","msg":"Bonjour Antoine, notre création lumière et notre mapping peuvent donner de l'impact à votre lancement. Un échange de 15 min cette semaine ?","canal":"LinkedIn"},
+  {"nom":"Salon de l'Habitat Méditerranée","contact":"Isabelle Roques, Commissaire générale","type":"Organisateur de salons","prestation":"Électricité de stands et sonorisation","lieu":"Toulon (83)","date":"2027-09-18","budget":"21 000 €","score":79,"source":"Veille marché","msg":"Bonjour Isabelle, nous assurons l'électricité et la sonorisation de salons de la région. Souhaitez-vous recevoir notre dossier ?","canal":"Email"},
+  {"nom":"Casino du Cap Ferrat","contact":"Julien Perrin, Directeur animation","type":"Lieu de réception","prestation":"Lumière architecturale, soirée du Nouvel An","lieu":"Saint-Jean-Cap-Ferrat (06)","date":"2027-12-31","budget":"24 000 €","score":85,"source":"Recommandation client","msg":"Bonjour Julien, nous proposons une création lumière sur mesure pour votre soirée du Nouvel An. Voici quelques réalisations.","canal":"LinkedIn"},
+  {"nom":"Université d'Aix-Marseille, BDE","contact":"Clara Vidal, Présidente","type":"Association étudiante","prestation":"Scène, son et lumière pour gala annuel","lieu":"Aix-en-Provence (13)","date":"2027-04-24","budget":"9 000 €","score":64,"source":"Facebook Meta","msg":"Bonjour Clara, nous pouvons fournir un pack scène, son et lumière adapté à votre budget de gala.","canal":"Email"},
+  {"nom":"Groupe Hôtelier Calanques","contact":"Thomas Aubert, Responsable séminaires","type":"Hôtellerie","prestation":"Sonorisation et écrans pour séminaires d'entreprise","lieu":"Cassis (13)","date":"2027-02-27","budget":"12 500 €","score":73,"source":"Prospection LinkedIn","msg":"Bonjour Thomas, nous équipons en sonorisation et écrans les séminaires de la région. Puis-je vous présenter nos formules ?","canal":"LinkedIn"}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var DATA = JSON.parse(document.getElementById('mock-data').textContent);
+  var leads = DATA.leads.slice();
+  var scen = DATA.scenarios;
+  var idx = 0, nextId = 100, filter = 'tous', openId = null;
+  var STAT = {nouveau:'Nouveau',contacte:'Contacté',rdv:'Rendez-vous',devis:'Devis envoyé',confirme:'Chantier confirmé',perdu:'Perdu'};
+  var ORDER = ['nouveau','contacte','rdv','devis','confirme','perdu'];
+  var prospectedBase = 9, hoursSaved = 4.5;
+  var lastChanged = '';
+
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function fmtDate(d){
+    var p = d.split('-'); var m=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];
+    return parseInt(p[2],10)+' '+m[parseInt(p[1],10)-1]+' '+p[0];
+  }
+  function monthsAhead(d){
+    var now = new Date(2026,9,22), t = new Date(d);
+    return Math.round((t-now)/(1000*60*60*24*30.4)*10)/10;
+  }
+  function count(s){return leads.filter(function(l){return l.statut===s;}).length;}
+
+  function renderKpis(){
+    var contacted = prospectedBase + leads.filter(function(l){return l.statut!=='nouveau';}).length - 3;
+    var rdv = count('rdv'), devis = count('devis'), conf = count('confirme');
+    var total = leads.length;
+    var tx = total ? Math.round((conf/total)*100) : 0;
+    var k = [
+      {k:'a',v:contacted,l:'Prospects contactés / semaine',d:'▲ contre 0 avant le projet'},
+      {k:'b',v:total,l:'Leads qualifiés dans le pipeline',d:'Notés automatiquement par l\'IA'},
+      {k:'c',v:rdv,l:'Rendez-vous obtenus',d:'Objectif : 2 / semaine'},
+      {k:'d',v:devis,l:'Devis envoyés',d:'Validation Franck avant envoi'},
+      {k:'e',v:tx+'%',l:'Taux de transformation',d:'Leads → chantiers confirmés'},
+      {k:'f',v:hoursSaved.toFixed(1).replace('.',',')+' h',l:'Temps sauvé / semaine',d:'≈ 1,5 ETP optimisé (estimation)'}
+    ];
+    var h='';
+    k.forEach(function(x){
+      h+='<div class="kpi'+(lastChanged===x.k?' flash':'')+'" data-k="'+x.k+'"><div class="v">'+x.v+'</div><div class="l">'+x.l+'</div><div class="d">'+x.d+'</div></div>';
+    });
+    document.getElementById('kpis').innerHTML=h;
+    // horizon
+    var firm = leads.filter(function(l){return l.statut==='confirme'||l.statut==='devis'||l.statut==='rdv';});
+    var far = firm.filter(function(l){return monthsAhead(l.date)>=3;}).length;
+    var pct = Math.min(100, Math.round(((conf*2+devis+rdv*0.5)/ (6*2))*100));
+    document.getElementById('hzBar').style.width = pct+'%';
+    document.getElementById('hzTxt').textContent = pct+' % couverts · '+conf+' chantier(s) confirmé(s), '+far+' piste(s) chaude(s) à plus de 3 mois';
+    lastChanged='';
+  }
+
+  function renderFilters(){
+    var h='<button class="chip'+(filter==='tous'?' on':'')+'" data-f="tous">Tous ('+leads.length+')</button>';
+    ORDER.forEach(function(s){
+      h+='<button class="chip'+(filter===s?' on':'')+'" data-f="'+s+'">'+STAT[s]+' ('+count(s)+')</button>';
+    });
+    document.getElementById('filters').innerHTML=h;
+  }
+
+  function scoreCls(s){return s>=85?'hi':(s>=70?'mid':'');}
+
+  function renderList(newId){
+    var box = document.getElementById('list');
+    var arr = leads.filter(function(l){return filter==='tous'||l.statut===filter;});
+    if(!arr.length){box.innerHTML='<div class="empty">Aucun prospect dans cette étape du pipeline pour le moment.</div>';return;}
+    var h='';
+    arr.forEach(function(l){
+      var open = openId===l.id;
+      var opts = ORDER.map(function(s){return '<option value="'+s+'"'+(s===l.statut?' selected':'')+'>'+STAT[s]+'</option>';}).join('');
+      h+='<div class="lead'+(open?' open':'')+(newId===l.id?' new-in':'')+'" data-id="'+l.id+'" data-s="'+l.statut+'">'
+       +'<div class="head" data-toggle="'+l.id+'">'
+       +'<div class="score '+scoreCls(l.score)+'" title="Score de qualification">'+l.score+'</div>'
+       +'<div class="hmain"><div class="n">'+esc(l.nom)+'</div><div class="s">'+esc(l.type)+' · '+esc(l.prestation)+'</div></div>'
+       +'<div class="s" style="font-size:12.5px;color:var(--muted)">📍 '+esc(l.lieu)+' · 📅 '+fmtDate(l.date)+'</div>'
+       +'<span class="badge b-'+l.statut+'">'+STAT[l.statut]+'</span><span class="arrow">▶</span></div>'
+       +'<div class="body">'
+       +'<div class="grid2">'
+       +'<div class="f"><span>Contact</span><b>'+esc(l.contact)+'</b></div>'
+       +'<div class="f"><span>Budget estimé</span><b>'+esc(l.budget)+'</b></div>'
+       +'<div class="f"><span>Événement dans</span><b>'+monthsAhead(l.date)+' mois</b></div>'
+       +'<div class="f"><span>Canal retenu</span><b>'+esc(l.canal)+'</b></div>'
+       +'<div class="f"><span>Relance</span><b>'+esc(l.relance||'À planifier')+'</b></div>'
+       +'<div class="f"><span>Origine du lead</span><div class="sources"><span class="src">'+esc(l.source)+'</span></div></div>'
+       +'</div>'
+       +'<div class="msg"><small>Message personnalisé rédigé par l\'agent IA</small>'+esc(l.msg)+'</div>'
+       +'<div class="actions">'
+       +'<select data-sel="'+l.id+'" aria-label="Changer le statut">'+opts+'</select>'
+       +(l.statut==='nouveau'?'<button class="btn ok" data-val="'+l.id+'">✔ Valider et envoyer le message</button>':'')
+       +'<button class="btn sec" data-note="'+l.id+'">Planifier la relance</button>'
+       +'</div>'
+       +'<div class="rgpd">Prospection B2B : mention d\'information et droit d\'opposition ajoutés automatiquement (RGPD).</div>'
+       +'</div></div>';
+    });
+    box.innerHTML=h;
+  }
+
+  function toast(t){
+    var e=document.getElementById('toast');e.textContent=t;e.classList.add('show');
+    clearTimeout(toast._t);toast._t=setTimeout(function(){e.classList.remove('show');},2600);
+  }
+
+  function refresh(newId){renderKpis();renderFilters();renderList(newId);}
+
+  document.getElementById('filters').addEventListener('click',function(e){
+    var b=e.target.closest('[data-f]');if(!b)return;
+    filter=b.getAttribute('data-f');refresh();
+  });
+
+  document.getElementById('list').addEventListener('click',function(e){
+    var t=e.target;
+    var val=t.closest('[data-val]');
+    if(val){
+      var l=leads.filter(function(x){return x.id===+val.getAttribute('data-val');})[0];
+      if(l){l.statut='contacte';l.relance='J+3 : planifiée automatiquement';lastChanged='a';hoursSaved=Math.round((hoursSaved+0.1)*10)/10;refresh();toast('Message validé par Franck et envoyé via '+l.canal+' (simulation)');}
+      return;
+    }
+    var note=t.closest('[data-note]');
+    if(note){toast('Relance planifiée à J+3 puis J+10 (simulation)');return;}
+    if(t.closest('select'))return;
+    var h=t.closest('[data-toggle]');
+    if(h){
+      var id=+h.getAttribute('data-toggle');
+      openId=(openId===id)?null:id;
+      var card=h.parentNode;
+      var all=document.querySelectorAll('.lead');
+      for(var i=0;i<all.length;i++){if(all[i]!==card)all[i].classList.remove('open');}
+      card.classList.toggle('open');
+    }
+  });
+
+  document.getElementById('list').addEventListener('change',function(e){
+    var s=e.target.getAttribute('data-sel');if(!s)return;
+    var l=leads.filter(function(x){return x.id===+s;})[0];
+    if(l){l.statut=e.target.value;lastChanged='c';refresh();toast('Statut mis à jour : '+STAT[l.statut]);}
+  });
+
+  document.getElementById('simBtn').addEventListener('click',function(){
+    var sc=scen[idx%scen.length];idx++;
+    var l={id:nextId++,nom:sc.nom,contact:sc.contact,type:sc.type,prestation:sc.prestation,lieu:sc.lieu,date:sc.date,budget:sc.budget,score:sc.score,statut:'nouveau',source:sc.source,msg:sc.msg,canal:sc.canal,relance:'À planifier'};
+    leads.unshift(l);
+    filter='tous';openId=l.id;lastChanged='b';
+    hoursSaved=Math.round((hoursSaved+0.2)*10)/10;
+    refresh(l.id);
+    toast('Nouveau prospect qualifié par l\'agent IA : '+l.nom);
+  });
+
+  refresh();
+})();
+</script>
+</body>
+</html>
