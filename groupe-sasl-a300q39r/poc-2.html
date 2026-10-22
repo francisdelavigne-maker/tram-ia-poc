@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GROUPE SASL – Veille marché, concurrence et appels d'offres (POC)</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1c2533;--mut:#667085;--line:#e3e7ee;--acc:#d9480f;--acc2:#fff1e8;--navy:#14213d;--ok:#2b8a3e;--warn:#e67700;--bad:#c92a2a;--info:#1971c2}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+header{background:var(--navy);color:#fff;padding:16px 24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;border-bottom:4px solid var(--acc)}
+header h1{font-size:20px;letter-spacing:.3px}
+header small{color:#b8c2d6;display:block;font-size:12px;margin-top:2px}
+.pill{background:rgba(255,255,255,.12);padding:6px 12px;border-radius:20px;font-size:12px}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--acc)}
+.kpi .v{font-size:28px;font-weight:700;color:var(--navy);transition:transform .3s,color .3s}
+.kpi .v.bump{transform:scale(1.12);color:var(--acc)}
+.kpi .l{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px;margin-top:2px}
+.kpi .s{font-size:12px;color:var(--mut);margin-top:6px}
+.bar{height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--acc);transition:width .6s}
+.toolbar{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;margin-bottom:14px}
+button{font:inherit;cursor:pointer;border:0;border-radius:8px;padding:10px 18px;font-weight:600}
+.cta{background:var(--acc);color:#fff;box-shadow:0 2px 6px rgba(217,72,15,.35)}
+.cta:hover{background:#bf3f0b}
+.cta:active{transform:translateY(1px)}
+.ghost{background:#fff;color:var(--ink);border:1px solid var(--line);padding:7px 13px;font-weight:500;font-size:13px}
+.ghost:hover{border-color:var(--acc)}
+.ghost.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.hint{font-size:12px;color:var(--mut);flex-basis:100%}
+.layout{display:grid;grid-template-columns:2fr 1fr;gap:16px}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.filters{margin-left:0}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px}
+.panel h2{font-size:15px;margin-bottom:10px;color:var(--navy)}
+.item{border:1px solid var(--line);border-left:4px solid var(--mut);border-radius:8px;margin-bottom:10px;background:#fff;overflow:hidden}
+.item.new{animation:pop .7s ease}
+@keyframes pop{0%{opacity:0;transform:translateY(-14px) scale(.97);background:var(--acc2)}60%{opacity:1;background:var(--acc2)}100%{transform:none;background:#fff}}
+.item.ao{border-left-color:var(--bad)}.item.cc{border-left-color:var(--warn)}.item.pr{border-left-color:var(--ok)}.item.fo{border-left-color:var(--info)}.item.mk{border-left-color:#7048e8}
+.head{display:flex;gap:10px;align-items:center;padding:11px 13px;cursor:pointer}
+.head:hover{background:#fafbfd}
+.tag{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px;padding:3px 8px;border-radius:5px;background:#eef1f6;color:var(--navy);white-space:nowrap}
+.ti{flex:1;font-weight:600}
+.meta{font-size:12px;color:var(--mut)}
+.st{font-size:12px;font-weight:600;padding:4px 10px;border-radius:14px;white-space:nowrap}
+.st.nouveau{background:#e7f1ff;color:var(--info)}
+.st.analyse{background:#fff4e0;color:var(--warn)}
+.st.pipeline{background:#e3f6e8;color:var(--ok)}
+.st.ecarte{background:#eceff3;color:var(--mut)}
+.chev{color:var(--mut);transition:transform .2s}
+.item.open .chev{transform:rotate(90deg)}
+.body{display:none;padding:4px 14px 14px;border-top:1px dashed var(--line);font-size:14px}
+.item.open .body{display:block}
+.body p{margin:8px 0}
+.row{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+.score{display:inline-block;font-weight:700;color:var(--acc)}
+.empty{padding:24px;text-align:center;color:var(--mut)}
+.side li{list-style:none;display:flex;justify-content:space-between;gap:8px;padding:8px 0;border-bottom:1px solid var(--line);font-size:13px}
+.side li:last-child{border:0}
+.side b{color:var(--navy)}
+.digest{background:var(--acc2);border:1px solid #ffd8c2;border-radius:8px;padding:10px 12px;font-size:13px;margin-top:12px}
+.toast{position:fixed;bottom:60px;right:20px;background:var(--navy);color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:16px;border-top:1px solid var(--line);background:#fff}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>GROUPE SASL</h1><small>Veille marché, concurrence et appels d'offres · Événementiel, support technique et artistique</small></div>
+  <div class="pill" id="weekPill">Digest hebdomadaire · Franck LORUSSO</div>
+</header>
+<main>
+  <section class="kpis" id="kpis"></section>
+
+  <div class="toolbar">
+    <button class="cta" id="btnSim">▶ Simuler une alerte de veille entrante</button>
+    <div class="filters" id="filters"></div>
+    <div class="hint">Cliquez sur une fiche pour la déplier, changez son statut ou transférez la piste au pipeline commercial. Les pistes retenues alimentent le suivi des chantiers à 6 mois.</div>
+  </div>
+
+  <div class="layout">
+    <div class="panel">
+      <h2>Historique des événements de veille</h2>
+      <div id="list"></div>
+    </div>
+    <div>
+      <div class="panel side">
+        <h2>Thèmes surveillés</h2>
+        <ul id="themes"></ul>
+        <div class="digest" id="digest"></div>
+      </div>
+    </div>
+  </div>
+</main>
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "types":{"ao":"Appel d'offres","cc":"Concurrence","pr":"Prospect","fo":"Fournisseur / matériel","mk":"Marché"},
+ "statuts":{"nouveau":"Nouveau","analyse":"À analyser","pipeline":"Transféré au pipeline","ecarte":"Écarté"},
+ "initial":[
+  {"t":"ao","titre":"Appel d'offres : sonorisation et scène, salon professionnel (Marseille)","src":"Marchés publics en ligne","date":"Lun. 08:12","score":92,"statut":"analyse","detail":"Prestation son, lumière et montage scène pour un salon de 3 jours, 4 500 visiteurs attendus. Date limite de réponse dans 12 jours. Budget estimé à 28 k€ HT. Zone compatible (Bouches-du-Rhône)."},
+  {"t":"cc","titre":"Concurrent : nouvelle prestation de mapping vidéo annoncée","src":"Site et réseaux du concurrent","date":"Lun. 07:40","score":71,"statut":"nouveau","detail":"Un prestataire régional propose désormais un forfait mapping pour lancements de produits. Positionnement tarifaire annoncé 15 % sous le marché. À surveiller pour adapter l'argumentaire sur la création lumière."},
+  {"t":"pr","titre":"Prospect : agence événementielle recherche un prestataire écrans LED","src":"Annonce LinkedIn","date":"Dim. 18:05","score":88,"statut":"pipeline","detail":"Agence lyonnaise cherchant un sous-traitant pour 6 événements d'entreprise sur l'année (écrans LED, régie). Chantiers à planifier à 6 mois. Piste déjà transmise au pipeline."},
+  {"t":"fo","titre":"Fournisseur : promotion sur projecteurs asservis LED","src":"Newsletter distributeur","date":"Ven. 16:30","score":64,"statut":"nouveau","detail":"Remise de 12 % sur une gamme de projecteurs asservis jusqu'à fin du mois. Peut améliorer la marge cible de 45 % sur les prochaines locations."},
+  {"t":"ao","titre":"Appel d'offres : électricité et distribution pour salon régional","src":"Plateforme d'appels d'offres","date":"Ven. 09:20","score":58,"statut":"ecarte","detail":"Lot électricité seul, hors zone habituelle (plus de 400 km). Écarté après analyse : rentabilité insuffisante au regard du déplacement."},
+  {"t":"mk","titre":"Marché : forte hausse des salons professionnels annoncée à l'automne","src":"Presse spécialisée événementiel","date":"Jeu. 11:00","score":76,"statut":"analyse","detail":"Les organisateurs prévoient un calendrier chargé de septembre à décembre. Anticiper la disponibilité du matériel et verrouiller les chantiers dès maintenant."},
+  {"t":"cc","titre":"Concurrent : réponse à un grand salon de Provence remportée","src":"Communiqué de presse","date":"Mer. 14:15","score":69,"statut":"nouveau","detail":"Un concurrent a obtenu la prestation technique d'un grand salon. Identifier l'organisateur et se positionner pour l'édition suivante."}
+ ],
+ "scenarios":[
+  {"t":"ao","titre":"Appel d'offres : mise en lumière d'un gala d'entreprise (Aix-en-Provence)","src":"Alerte plateforme d'appels d'offres","score":90,"detail":"Création lumière et mapping sur façade pour un gala de 600 invités. Date limite de réponse dans 9 jours. Fort potentiel de valorisation de la création lumière."},
+  {"t":"pr","titre":"Prospect : organisateur de salons recherche un prestataire écrans LED","src":"Veille LinkedIn","score":86,"detail":"Organisateur de 4 salons annuels en région PACA, à la recherche d'un prestataire unique pour les écrans et la régie. Chantiers connus à 6 mois."},
+  {"t":"fo","titre":"Fournisseur : nouvelle gamme d'écrans LED indoor, tarif location en baisse","src":"Veille fournisseurs","score":67,"detail":"Nouveau modèle à pas fin, plus léger au montage. Possible gain de temps de pose et amélioration de la marge."},
+  {"t":"cc","titre":"Concurrent : recrutement de techniciens son et lumière annoncé","src":"Offres d'emploi en ligne","score":62,"detail":"Signal de montée en charge du concurrent sur la zone. Peut annoncer une pression sur les prix et sur la disponibilité des techniciens."},
+  {"t":"ao","titre":"Appel d'offres : sonorisation d'un festival de musique (Vaucluse)","src":"Marchés publics en ligne","score":81,"detail":"Sonorisation et scène pour un festival de 2 jours, 8 000 spectateurs. Besoin en main-d'œuvre technique important. Date limite dans 15 jours."},
+  {"t":"mk","titre":"Marché : montée des demandes de mapping pour lancements de produits","src":"Presse spécialisée","score":74,"detail":"Les marques privilégient les expériences immersives. Opportunité de mise en avant de la création de mapping de SASL dans les propositions."},
+  {"t":"pr","titre":"Prospect : agence événementielle marseillaise cherche un sous-traitant technique","src":"Annonce de recherche de prestataire","score":84,"detail":"Besoin récurrent de montage scène et sonorisation pour des conventions d'entreprise. Piste à fort potentiel de chantiers verrouillés à 6 mois."}
+ ],
+ "themes":[
+  ["Appels d'offres (zone PACA)","12 sources"],
+  ["Concurrents régionaux","8 sources"],
+  ["Fournisseurs et matériel","6 sources"],
+  ["Prospects (agences, organisateurs)","10 sources"],
+  ["Marché événementiel","5 sources"]
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var data=JSON.parse(document.getElementById('mock-data').textContent);
+  var items=[],filter='all',scenIdx=0,uid=0,opened={};
+  var jours=['Lun.','Mar.','Mer.','Jeu.','Ven.','Sam.','Dim.'];
+  var kpiState={heures:8.0,pistes:0,ao:0,total:0,pertinence:0};
+
+  function init(){
+    data.initial.forEach(function(d){items.push(copy(d))});
+    computeKpis();
+    renderFilters();renderThemes();renderKpis(false);render();renderDigest();
+    document.getElementById('btnSim').addEventListener('click',simulate);
+  }
+  function copy(d){uid++;return {id:uid,t:d.t,titre:d.titre,src:d.src,date:d.date||now(),score:d.score,statut:d.statut||'nouveau',detail:d.detail}}
+  function now(){var n=new Date();var h=('0'+n.getHours()).slice(-2),m=('0'+n.getMinutes()).slice(-2);return "Aujourd'hui "+h+':'+m}
+
+  function computeKpis(){
+    var total=items.length;
+    var pistes=items.filter(function(i){return i.statut==='pipeline'}).length;
+    var ao=items.filter(function(i){return i.t==='ao'&&i.statut!=='ecarte'}).length;
+    var sum=0;items.forEach(function(i){sum+=i.score});
+    kpiState.total=total;kpiState.pistes=pistes;kpiState.ao=ao;
+    kpiState.pertinence=total?Math.round(sum/total):0;
+    var gain=Math.min(8,4.5+total*0.35);
+    kpiState.heures=Math.round(gain*10)/10;
+  }
+  function renderKpis(bump){
+    var k=kpiState;
+    var pct=Math.min(100,Math.round(k.heures/8*100));
+    var html='';
+    html+=card('Heures de recherche économisées / semaine',k.heures.toString().replace('.',',')+' h','Objectif : 8 h/semaine (de 16 h vers 8 h)',pct);
+    html+=card('Pistes transmises au pipeline',k.pistes,'Alimentent le suivi des chantiers à 6 mois');
+    html+=card("Appels d'offres détectés",k.ao,'Alertes immédiates, hors dossiers écartés');
+    html+=card('Pertinence moyenne des alertes',k.pertinence+' %','Sur '+k.total+' événements analysés');
+    document.getElementById('kpis').innerHTML=html;
+    if(bump){[].forEach.call(document.querySelectorAll('.kpi .v'),function(e){e.classList.add('bump');setTimeout(function(){e.classList.remove('bump')},450)})}
+  }
+  function card(l,v,s,pct){
+    return '<div class="kpi"><div class="v">'+v+'</div><div class="l">'+l+'</div><div class="s">'+s+'</div>'+(pct!==undefined?'<div class="bar"><i style="width:'+pct+'%"></i></div>':'')+'</div>';
+  }
+  function renderFilters(){
+    var f=document.getElementById('filters');
+    var h='<button class="ghost on" data-f="all">Tous</button>';
+    Object.keys(data.types).forEach(function(k){h+='<button class="ghost" data-f="'+k+'">'+data.types[k]+'</button>'});
+    f.innerHTML=h;
+    [].forEach.call(f.querySelectorAll('button'),function(b){
+      b.addEventListener('click',function(){
+        filter=b.getAttribute('data-f');
+        [].forEach.call(f.querySelectorAll('button'),function(x){x.classList.remove('on')});
+        b.classList.add('on');render();
+      });
+    });
+  }
+  function renderThemes(){
+    document.getElementById('themes').innerHTML=data.themes.map(function(t){return '<li><span>'+t[0]+'</span><b>'+t[1]+'</b></li>'}).join('');
+  }
+  function renderDigest(){
+    var n=items.filter(function(i){return i.statut==='nouveau'||i.statut==='analyse'}).length;
+    document.getElementById('digest').innerHTML='<b>Digest du lundi :</b> '+n+' piste(s) en attente de décision pour Franck. Réponse ou non à un appel d\'offres : décision du dirigeant.';
+  }
+  function render(){
+    var list=document.getElementById('list');
+    var shown=items.filter(function(i){return filter==='all'||i.t===filter});
+    if(!shown.length){list.innerHTML='<div class="empty">Aucun événement pour ce filtre.</div>';return}
+    list.innerHTML=shown.map(function(i){return itemHtml(i)}).join('');
+    [].forEach.call(list.querySelectorAll('.item'),function(el){
+      var id=parseInt(el.getAttribute('data-id'),10);
+      el.querySelector('.head').addEventListener('click',function(){
+        el.classList.toggle('open');opened[id]=el.classList.contains('open');
+      });
+      [].forEach.call(el.querySelectorAll('[data-s]'),function(b){
+        b.addEventListener('click',function(e){e.stopPropagation();setStatus(id,b.getAttribute('data-s'))});
+      });
+    });
+  }
+  function itemHtml(i){
+    var open=opened[i.id]?' open':'';
+    var nw=i.isNew?' new':'';
+    var btns='';
+    if(i.statut!=='pipeline')btns+='<button class="ghost" data-s="pipeline">➜ Transférer au pipeline</button>';
+    if(i.statut!=='analyse')btns+='<button class="ghost" data-s="analyse">À analyser</button>';
+    if(i.statut!=='ecarte')btns+='<button class="ghost" data-s="ecarte">Écarter</button>';
+    return '<div class="item '+i.t+open+nw+'" data-id="'+i.id+'">'+
+      '<div class="head"><span class="tag">'+data.types[i.t]+'</span><div class="ti">'+i.titre+'<div class="meta">'+i.src+' · '+i.date+'</div></div>'+
+      '<span class="st '+i.statut+'">'+data.statuts[i.statut]+'</span><span class="chev">▶</span></div>'+
+      '<div class="body"><p>'+i.detail+'</p><p class="meta">Pertinence calculée : <span class="score">'+i.score+' / 100</span> selon la zone et le type de prestation.</p><div class="row">'+btns+'</div></div></div>';
+  }
+  function setStatus(id,s){
+    items.forEach(function(i){if(i.id===id){i.statut=s;i.isNew=false}});
+    computeKpis();renderKpis(true);render();renderDigest();
+    toast(s==='pipeline'?'Piste transférée au pipeline commercial':'Statut mis à jour : '+data.statuts[s]);
+  }
+  function simulate(){
+    var sc=data.scenarios[scenIdx%data.scenarios.length];scenIdx++;
+    var it=copy({t:sc.t,titre:sc.titre,src:sc.src,date:now(),score:sc.score,statut:'nouveau',detail:sc.detail});
+    it.isNew=true;opened[it.id]=true;
+    items.unshift(it);
+    filter='all';
+    [].forEach.call(document.querySelectorAll('#filters button'),function(x){x.classList.toggle('on',x.getAttribute('data-f')==='all')});
+    computeKpis();renderKpis(true);render();renderDigest();
+    setTimeout(function(){it.isNew=false},900);
+    toast(sc.t==='ao'?"Alerte appel d'offres détectée":'Nouvelle alerte de veille reçue');
+  }
+  var tt;
+  function toast(m){
+    var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+    clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2400);
+  }
+  init();
+})();
+</script>
+</body>
+</html>
