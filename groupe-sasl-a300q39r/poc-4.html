@@ -1,0 +1,326 @@
+<!doctype html>
+<html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow">
+<title>GROUPE SASL – Poste de pilotage des 3 assistants</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1b2430;--mut:#667085;--line:#e2e7ee;--acc:#c2410c;--acc-l:#fff1e8;--navy:#1e293b;--ok:#15803d;--warn:#d97706;--bad:#c92a2a;--info:#2563eb;--core:#211c1a;--core-ink:#f4ece2;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1a26;--card:#16293b;--ink:#e8eef4;--mut:#9db0c2;--line:#26405a;--acc:#f0a04b;--acc-l:#2b2218;--navy:#e8eef4;--ok:#4ade80;--warn:#fbbf24;--bad:#f87171;--info:#7aa7ff;--core:#0a1119;--core-ink:#e8eef4;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:14px;line-height:1.45}
+button{font:inherit;cursor:pointer}
+.wrap{max-width:1180px;margin:0 auto;padding:18px 18px 40px}
+header.top{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px;margin-bottom:14px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:40px;height:40px;border-radius:10px;background:var(--navy);color:var(--card);display:grid;place-items:center;font-weight:800;letter-spacing:.04em}
+.brand h1{margin:0;font-size:clamp(17px,2.6vw,22px);line-height:1.15}
+.brand p{margin:0;color:var(--mut);font-size:13px}
+.user{font-size:13px;color:var(--mut);background:var(--card);border:1px solid var(--line);border-radius:999px;padding:6px 12px}
+.user b{color:var(--ink)}
+/* Interface commune / coeur */
+.core{background:var(--core);color:var(--core-ink);border-radius:14px;padding:14px 16px;margin-bottom:14px}
+.core h2{margin:0 0 10px;font-size:12px;letter-spacing:.1em;text-transform:uppercase;opacity:.8}
+.chips{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px}
+.chip{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:10px;padding:8px 10px;font-size:12.5px}
+.chip b{display:block;font-size:13px}
+.chip i{display:inline-block;width:8px;height:8px;border-radius:50%;background:#4ade80;margin-right:6px}
+.chip span{opacity:.75}
+/* KPI */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:10px;margin-bottom:14px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;border-top:3px solid var(--acc)}
+.kpi .v{font-size:26px;font-weight:800;line-height:1.1}
+.kpi .l{font-size:12.5px;font-weight:600;margin-top:2px}
+.kpi .s{font-size:12px;color:var(--mut);margin-top:2px}
+.kpi .bar{height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
+.kpi .bar i{display:block;height:100%;background:var(--acc);border-radius:4px;transition:width .5s}
+.kpi.bad{border-top-color:var(--bad)}.kpi.bad .v{color:var(--bad)}
+.kpi.pop .v{animation:pop .45s}
+@keyframes pop{40%{transform:scale(1.12)}}
+/* tabs */
+.tabs{display:flex;gap:4px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:14px}
+.tab{appearance:none;border:0;background:none;color:var(--mut);font-weight:600;padding:10px 14px;border-bottom:3px solid transparent;white-space:nowrap}
+.tab[aria-selected=true]{color:var(--ink);border-bottom-color:var(--acc)}
+.tab .n{display:inline-block;min-width:20px;text-align:center;background:var(--line);border-radius:10px;font-size:11.5px;padding:0 6px;margin-left:6px;color:var(--ink)}
+.panel{display:none}.panel.on{display:block}
+.grid2{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:14px}
+@media(max-width:860px){.grid2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px}
+.card h3{margin:0 0 4px;font-size:15px}
+.card .sub{color:var(--mut);font-size:12.5px;margin:0 0 10px}
+.btn{appearance:none;border:1px solid var(--line);background:var(--card);color:var(--ink);border-radius:8px;padding:7px 12px;font-weight:600;font-size:13px}
+.btn:hover{border-color:var(--acc)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+[data-theme] .btn.pri{color:#fff}
+@media(prefers-color-scheme:dark){.btn.pri{color:#1a1205}}
+.btn:disabled{opacity:.45;cursor:default}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+/* flux */
+.flow{display:grid;grid-template-columns:1fr auto 1fr auto 1fr;gap:8px;align-items:stretch;margin-bottom:14px}
+@media(max-width:720px){.flow{grid-template-columns:1fr}.flow .arr{transform:rotate(90deg);justify-self:center}}
+.fbox{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;text-align:left;border-left:4px solid var(--acc);width:100%}
+.fbox.act{outline:2px solid var(--acc)}
+.fbox .t{font-weight:700}.fbox .m{color:var(--mut);font-size:12.5px}.fbox .c{font-size:22px;font-weight:800;margin:2px 0}
+.arr{align-self:center;color:var(--mut);font-size:22px}
+/* stepper */
+.steps{list-style:none;margin:0 0 12px;padding:0;display:grid;gap:6px}
+.steps li{display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid var(--line);border-radius:10px;font-size:13px}
+.steps li .no{flex:none;width:22px;height:22px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-size:12px;font-weight:700}
+.steps li.done{opacity:.75}.steps li.done .no{background:var(--ok);color:#fff}
+.steps li.cur{border-color:var(--acc);background:var(--acc-l)}.steps li.cur .no{background:var(--acc);color:#fff}
+.tag{display:inline-block;font-size:11px;font-weight:700;border-radius:6px;padding:1px 7px;margin-right:6px;background:var(--line);color:var(--ink)}
+.tag.veille{background:#dbeafe;color:#1e40af}.tag.prospection{background:#ede9fe;color:#5b21b6}.tag.devis{background:#fef3c7;color:#92400e}.tag.core{background:#e5e7eb;color:#111827}.tag.franck{background:#dcfce7;color:#166534}
+@media(prefers-color-scheme:dark){.tag.veille{background:#1e3a8a;color:#dbeafe}.tag.prospection{background:#4c1d95;color:#ede9fe}.tag.devis{background:#78350f;color:#fef3c7}.tag.core{background:#374151;color:#f3f4f6}.tag.franck{background:#14532d;color:#dcfce7}}
+/* journal */
+.journal{list-style:none;margin:0;padding:0;max-height:330px;overflow:auto;display:grid;gap:6px}
+.journal li{font-size:12.5px;border-bottom:1px dashed var(--line);padding-bottom:6px}
+.journal time{color:var(--mut);margin-right:6px}
+/* listes */
+.list{display:grid;gap:8px}
+.item{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:var(--card)}
+.item.new{animation:in .5s}
+@keyframes in{from{background:var(--acc-l);transform:translateY(-4px)}}
+.item .h{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+.item .t{font-weight:700}
+.item .m{color:var(--mut);font-size:12.5px;margin-top:2px}
+.badge{font-size:11.5px;font-weight:700;border-radius:999px;padding:2px 9px;background:var(--line);white-space:nowrap}
+.badge.ok{background:#dcfce7;color:#166534}.badge.warn{background:#fef3c7;color:#92400e}.badge.bad{background:#fee2e2;color:#991b1b}.badge.info{background:#dbeafe;color:#1e40af}
+@media(prefers-color-scheme:dark){.badge.ok{background:#14532d;color:#dcfce7}.badge.warn{background:#78350f;color:#fef3c7}.badge.bad{background:#7f1d1d;color:#fee2e2}.badge.info{background:#1e3a8a;color:#dbeafe}}
+.msg{margin-top:8px;font-size:12.5px;background:var(--acc-l);border-left:3px solid var(--acc);padding:8px 10px;border-radius:6px}
+table.l{width:100%;border-collapse:collapse;margin-top:8px;font-size:12.5px}
+table.l td,table.l th{padding:4px 6px;border-bottom:1px solid var(--line);text-align:left}
+table.l td.r,table.l th.r{text-align:right}
+.note{margin-top:20px;font-size:12.5px;color:var(--mut)}
+.score{font-weight:800}
+</style></head>
+<body><div class="wrap">
+<header class="top">
+ <div class="brand"><div class="logo">SASL</div><div><h1>GROUPE SASL · Poste de pilotage</h1><p>Un seul tableau de bord pour vos 3 assistants : veille, prospection, devis</p></div></div>
+ <div class="user">Connecté : <b>Franck LORUSSO</b>, Dirigeant · rien ne part sans votre validation</div>
+</header>
+
+<section class="core" aria-label="Le cœur">
+ <h2>Le cœur · infrastructure IA privée de GROUPE SASL</h2>
+ <div class="chips" id="chips"></div>
+</section>
+
+<section class="kpis" id="kpis" aria-live="polite"></section>
+
+<nav class="tabs" role="tablist" id="tabs"></nav>
+
+<section class="panel on" id="p-pilotage">
+ <div class="flow" id="flow"></div>
+ <div class="grid2">
+  <div class="card">
+   <h3>Un chantier de bout en bout</h3>
+   <p class="sub">Suivez une piste de l'alerte de veille jusqu'au chantier confirmé. Chaque étape met à jour les 3 assistants et les chiffres du haut.</p>
+   <ol class="steps" id="steps"></ol>
+   <div class="row"><button class="btn pri" id="next">Étape suivante</button><button class="btn" id="reset">Réinitialiser la démo</button></div>
+  </div>
+  <div class="card">
+   <h3>Journal du cœur</h3>
+   <p class="sub">Tout ce que font les assistants est visible et traçable.</p>
+   <ul class="journal" id="journal"></ul>
+  </div>
+ </div>
+</section>
+
+<section class="panel" id="p-veille"><div class="card"><h3>Assistant veille et appels d'offres</h3><p class="sub">Digest hebdomadaire et alertes. Retenez une piste pour la transmettre à la prospection.</p><div class="list" id="l-veille"></div></div></section>
+<section class="panel" id="p-prospection"><div class="card"><h3>Assistant prospection B2B</h3><p class="sub">Pistes qualifiées, messages personnalisés relus par vous avant tout envoi, relances et chantiers à 6 mois.</p><div class="list" id="l-leads"></div></div></section>
+<section class="panel" id="p-devis"><div class="card"><h3>Assistant devis et propositions</h3><p class="sub">Brouillons préparés, marge contrôlée (seuil 45 %), validation par Franck sur chaque devis.</p><div class="list" id="l-devis"></div></div></section>
+
+<p class="note">Démonstration : toutes les données sont fictives et rien n'est envoyé. Les gains annoncés sont des estimations à valider avec chaque entreprise. TRAM IA.</p>
+</div>
+<script>
+(function(){
+var NOW=new Date(2026,9,22), SEUIL=45;
+var LEAD_ORDER=['nouveau','contacte','rdv','devis','confirme'];
+var LEAD_LAB={nouveau:'Nouveau',contacte:'Contacté',rdv:'Rendez-vous',devis:'Devis en cours',confirme:'Chantier confirmé'};
+var DEV_LAB={brouillon:'Brouillon prêt',alerte:'Marge sous 45 %',valide:'Validé par Franck',envoye:'Envoyé au client',accepte:'Accepté'};
+var S,tab='pilotage',lastKpi={};
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]});}
+function eur(n){return Math.round(n).toLocaleString('fr-FR')+' €';}
+function hm(min){var h=Math.floor(min/60),m=Math.round(min%60);return h+'h'+(m<10?'0':'')+m;}
+function fdate(iso){var p=iso.split('-'),m=['janv.','févr.','mars','avr.','mai','juin','juil.','août','sept.','oct.','nov.','déc.'];return parseInt(p[2],10)+' '+m[parseInt(p[1],10)-1]+' '+p[0];}
+function months(iso){return Math.round((new Date(iso)-NOW)/(86400000*30.4)*10)/10;}
+function tot(d){var ht=0,c=0;d.lignes.forEach(function(l){ht+=l[1]*l[2];c+=l[1]*l[3];});return {ht:ht,cout:c,marge:ht?(ht-c)/ht*100:0};}
+function pad(n){return (n<10?'0':'')+n;}
+function stamp(){var d=new Date();return pad(d.getHours())+':'+pad(d.getMinutes());}
+
+function init(){
+ S={nid:100,minutes:330,journal:[],step:0,sc:{},
+  veille:[
+   {id:1,titre:"Appel d'offres : lots son et lumière, Festival des Plages 2027",src:"Plateforme marchés publics",type:'Appel d\'offres',score:81,statut:'nouveau'},
+   {id:2,titre:"Un concurrent régional investit dans les écrans LED 3,9 mm",src:"Presse spécialisée",type:'Concurrent',score:64,statut:'nouveau'},
+   {id:3,titre:"Distributeur allemand : projecteurs LED en baisse de 9 %",src:"Site fournisseur",type:'Fournisseur',score:77,statut:'nouveau'},
+   {id:4,titre:"Consultation : sonorisation Salon de l'Habitat, Aix 2027",src:"Plateforme marchés publics",type:'Appel d\'offres',score:86,statut:'retenu'}
+  ],
+  leads:[
+   {id:1,nom:"Agence Provence Events",orig:"Recommandation",statut:'contacte',date:"2027-03-12",veilleId:0},
+   {id:2,nom:"Salon de l'Habitat, Aix",orig:"Veille",statut:'rdv',date:"2027-05-08",veilleId:4},
+   {id:3,nom:"Mairie de Pélissanne",orig:"Bouche-à-oreille",statut:'confirme',date:"2027-04-10",veilleId:0},
+   {id:4,nom:"Festival Estivales de Salon",orig:"Bouche-à-oreille",statut:'confirme',date:"2027-02-20",veilleId:0},
+   {id:5,nom:"Hôtel Les Alpilles (séminaire)",orig:"Site internet",statut:'nouveau',date:"2027-01-28",veilleId:0}
+  ],
+  devis:[
+   {id:1,leadId:3,client:"Mairie de Pélissanne",statut:'accepte',lignes:[["Sonorisation scène",1,2800,1500],["Éclairage",1,2400,1250],["Techniciens (3 j)",3,900,540]]},
+   {id:2,leadId:4,client:"Festival Estivales de Salon",statut:'accepte',lignes:[["Scène et structure",1,4200,2300],["Écran LED",1,3100,1700],["Régie lumière",2,800,420]]},
+   {id:3,leadId:1,client:"Agence Provence Events",statut:'alerte',lignes:[["Mapping vidéo",1,3600,2300],["Éclairage architectural",1,2200,1250],["Techniciens (2 j)",2,900,620]]}
+  ]};
+ log('core','Cœur démarré : données reliées, ton de Franck chargé, aucun envoi automatique.');
+}
+
+function log(mod,txt,franck){S.journal.unshift({t:stamp(),mod:mod,txt:txt,f:!!franck});if(S.journal.length>40)S.journal.pop();}
+function modName(m){return {core:'Cœur',veille:'Veille',prospection:'Prospection',devis:'Devis'}[m]||m;}
+
+/* actions */
+function lead(id){return S.leads.filter(function(l){return l.id===id})[0];}
+function devisOf(id){return S.devis.filter(function(d){return d.id===id})[0];}
+function retain(id,fromScenario){
+ var v=S.veille.filter(function(x){return x.id===id})[0]; if(!v||v.statut!=='nouveau')return null;
+ v.statut='retenu'; S.minutes+=20; log('veille','Piste retenue : « '+v.titre+' ».',true);
+ var l={id:++S.nid,nom:v.titre.indexOf('Aubagne')>-1?"Ville d'Aubagne":v.titre.split(':').pop().trim().slice(0,40),orig:'Veille',statut:'nouveau',date:v.date||"2027-06-18",veilleId:v.id,isNew:true};
+ S.leads.unshift(l); log('prospection','Piste transmise au suivi de prospection : '+l.nom+'.'); return l;
+}
+function drop(id){var v=S.veille.filter(function(x){return x.id===id})[0];if(v&&v.statut==='nouveau'){v.statut='ecarte';log('veille','Piste écartée : « '+v.titre+' ».',true);}}
+function draft(id){var l=lead(id);if(!l||l.statut!=='nouveau'||l.msg)return;
+ l.msg="Bonjour, GROUPE SASL accompagne depuis plus de 30 ans les événements de la région (scène, son, lumière, mapping). Pour "+l.nom+", nous pouvons proposer un parc adapté et une équipe technique sur site. Seriez-vous disponible pour un échange de 20 minutes la semaine prochaine ?";
+ S.minutes+=15; log('prospection','Message personnalisé rédigé pour '+l.nom+', en attente de validation.');}
+function sendMsg(id){var l=lead(id);if(!l||!l.msg||l.statut!=='nouveau')return;
+ l.statut='contacte'; log('prospection','Message validé et envoyé à '+l.nom+' (relances J+3 / J+10 planifiées).',true);}
+function fixRdv(id){var l=lead(id);if(!l||l.statut!=='contacte')return;l.statut='rdv';log('prospection','Rendez-vous obtenu avec '+l.nom+'.');}
+function prep(id){var l=lead(id);if(!l||l.statut!=='rdv')return null;
+ var d={id:++S.nid,leadId:l.id,client:l.nom,statut:'brouillon',isNew:true,lignes:[["Régie son et lumière",1,3400,1750],["Parc LED et projecteurs",1,3900,2050],["Techniciens (3 j)",3,900,560],["Transport et montage",1,450,260]]};
+ var m=tot(d).marge; if(m<SEUIL)d.statut='alerte';
+ S.devis.unshift(d); l.statut='devis'; S.minutes+=145;
+ log('devis','Brouillon de devis préparé pour '+l.nom+' en 1h35 contre 4 h. Marge : '+m.toFixed(1).replace('.',',')+' %.');return d;}
+function fixMargin(id){var d=devisOf(id);if(!d||d.statut!=='alerte')return;
+ d.lignes.forEach(function(l){l[2]=Math.round(l[2]*1.06/10)*10;});
+ d.statut='brouillon'; log('devis','Prix ajustés de 6 % : marge remontée à '+tot(d).marge.toFixed(1).replace('.',',')+' %.',true);}
+function validate(id){var d=devisOf(id);if(!d||d.statut!=='brouillon')return;d.statut='valide';log('devis','Devis '+d.client+' validé par Franck.',true);}
+function sendDevis(id){var d=devisOf(id);if(!d||d.statut!=='valide')return;d.statut='envoye';log('devis','Devis envoyé à '+d.client+' ; relance J+5 planifiée.',true);}
+function accept(id){var d=devisOf(id);if(!d||d.statut!=='envoye')return;d.statut='accepte';
+ var l=lead(d.leadId);if(l){l.statut='confirme';log('prospection','Chantier confirmé : '+l.nom+' ('+fdate(l.date)+', dans '+String(months(l.date)).replace('.',',')+' mois).');}
+ S.minutes+=30;log('devis','Devis accepté : '+d.client+' ('+eur(tot(d).ht)+' HT), conversion en facture préparée.');}
+
+/* scénario */
+var STEPS=[
+ {mod:'veille',t:"Alerte de veille",d:"L'assistant détecte un appel d'offres pour la fête de la musique d'Aubagne.",b:"Simuler l'alerte",run:function(){
+  var v={id:++S.nid,titre:"Appel d'offres : sonorisation et lumière, fête de la musique, Ville d'Aubagne",src:"Plateforme marchés publics",type:"Appel d'offres",score:88,statut:'nouveau',date:"2027-06-18",isNew:true};
+  S.veille.unshift(v);S.sc.v=v.id;S.minutes+=20;log('veille',"Alerte immédiate : « "+v.titre+" » (pertinence 88 %).");}},
+ {mod:'franck',t:"Franck retient la piste",d:"Vous décidez : la piste passe dans le suivi de prospection.",b:"Retenir la piste",run:function(){var l=retain(S.sc.v);if(l)S.sc.l=l.id;}},
+ {mod:'prospection',t:"Message personnalisé",d:"L'assistant rédige un message qui valorise vos références ; il attend votre relecture.",b:"Rédiger le message",run:function(){draft(S.sc.l);}},
+ {mod:'franck',t:"Franck valide l'envoi",d:"Vous relisez, vous validez : le message part, les relances sont planifiées, un rendez-vous est obtenu.",b:"Valider l'envoi",run:function(){sendMsg(S.sc.l);fixRdv(S.sc.l);}},
+ {mod:'devis',t:"Brouillon de devis",d:"Après le rendez-vous, le devis est préparé et la marge contrôlée à 45 % minimum.",b:"Préparer le devis",run:function(){var d=prep(S.sc.l);if(d)S.sc.d=d.id;}},
+ {mod:'franck',t:"Franck valide et envoie",d:"Vous gardez la main : validation du devis, puis envoi au client.",b:"Valider et envoyer",run:function(){var d=devisOf(S.sc.d);if(d&&d.statut==='alerte')fixMargin(d.id);validate(S.sc.d);sendDevis(S.sc.d);}},
+ {mod:'devis',t:"Devis accepté, chantier verrouillé",d:"Le client accepte : le chantier est confirmé à plus de 6 mois.",b:"Simuler l'acceptation",run:function(){accept(S.sc.d);}}
+];
+function nextStep(){if(S.step>=STEPS.length)return;STEPS[S.step].run();S.step++;render(true);}
+
+/* rendu */
+function kpis(){
+ var retenus=S.veille.filter(function(v){return v.statut==='retenu'}).length;
+ var leads=S.leads.length;
+ var enCours=S.devis.filter(function(d){return d.statut!=='accepte'});
+ var val=enCours.reduce(function(s,d){return s+tot(d).ht},0);
+ var ht=0,mg=0;S.devis.forEach(function(d){if(['valide','envoye','accepte'].indexOf(d.statut)<0)return;var t=tot(d);ht+=t.ht;mg+=t.ht-t.cout;});var marge=ht?mg/ht*100:0;
+ var conf=S.leads.filter(function(l){return l.statut==='confirme'}).length;
+ var pct=Math.min(100,Math.round(S.minutes/768*100));
+ return [
+  {k:'t',v:hm(S.minutes),l:'Temps sauvé cette semaine',s:"Objectif 12h48 / semaine (estimation)",bar:pct},
+  {k:'v',v:retenus,l:'Pistes transmises à la prospection',s:'Issues de la veille'},
+  {k:'l',v:leads,l:'Contacts dans le pipeline',s:'Suivis et relancés pour vous'},
+  {k:'d',v:enCours.length,l:'Devis en cours',s:eur(val)+' HT en préparation'},
+  {k:'m',v:marge.toFixed(1).replace('.',',')+' %',l:'Marge moyenne des devis',s:'Devis validés ou envoyés · seuil 45 %',bad:marge<SEUIL},
+  {k:'c',v:conf+' / 6',l:'Chantiers confirmés',s:'Objectif : 6 mois de visibilité',bar:Math.min(100,Math.round(conf/6*100))}
+ ];
+}
+function renderChips(){
+ var n=S.leads.length+S.devis.length;
+ var c=[['Orchestrateur','Actif · 3 assistants branchés'],['Vos données',n+' dossiers · catalogue de prix'],['Voix de Franck','Ton direct et professionnel'],["Modèle d'IA",'Accord de protection signé'],['Règles de travail','Jamais d\'envoi sans validation'],['Espace privé','Hébergé en Europe']];
+ document.getElementById('chips').innerHTML=c.map(function(x){return '<div class="chip"><b><i></i>'+x[0]+'</b><span>'+esc(x[1])+'</span></div>'}).join('');
+}
+function renderKpis(bump){
+ var k=kpis(),h='';
+ k.forEach(function(x){var ch=bump&&lastKpi[x.k]!==undefined&&lastKpi[x.k]!==String(x.v);lastKpi[x.k]=String(x.v);
+  h+='<div class="kpi'+(x.bad?' bad':'')+(ch?' pop':'')+'"><div class="v">'+x.v+'</div><div class="l">'+x.l+'</div><div class="s">'+x.s+'</div>'+(x.bar!==undefined?'<div class="bar"><i style="width:'+x.bar+'%"></i></div>':'')+'</div>';});
+ document.getElementById('kpis').innerHTML=h;
+}
+function renderTabs(){
+ var nv=S.veille.filter(function(v){return v.statut==='nouveau'}).length;
+ var T=[['pilotage','Pilotage',''],['veille','Veille',nv],['prospection','Prospection',S.leads.length],['devis','Devis',S.devis.length]];
+ document.getElementById('tabs').innerHTML=T.map(function(t){return '<button class="tab" role="tab" data-t="'+t[0]+'" aria-selected="'+(tab===t[0])+'">'+t[1]+(t[2]!==''?'<span class="n">'+t[2]+'</span>':'')+'</button>'}).join('');
+ [].forEach.call(document.querySelectorAll('.tab'),function(b){b.onclick=function(){tab=b.getAttribute('data-t');render();};});
+ ['pilotage','veille','prospection','devis'].forEach(function(p){document.getElementById('p-'+p).className='panel'+(p===tab?' on':'');});
+}
+function renderFlow(){
+ var nv=S.veille.filter(function(v){return v.statut==='nouveau'}).length;
+ var act=S.step<STEPS.length?STEPS[S.step].mod:'';
+ var B=[['veille','Veille','alertes à traiter',nv],['prospection','Prospection','contacts suivis',S.leads.length],['devis','Devis','devis en cours',S.devis.filter(function(d){return d.statut!=='accepte'}).length]];
+ var h='';B.forEach(function(b,i){h+='<button class="fbox'+(act===b[0]?' act':'')+'" data-go="'+b[0]+'"><div class="t">'+b[1]+'</div><div class="c">'+b[3]+'</div><div class="m">'+b[2]+'</div></button>';if(i<2)h+='<div class="arr" aria-hidden="true">→</div>';});
+ var f=document.getElementById('flow');f.innerHTML=h;
+ [].forEach.call(f.querySelectorAll('.fbox'),function(b){b.onclick=function(){tab=b.getAttribute('data-go');render();};});
+}
+function renderSteps(){
+ document.getElementById('steps').innerHTML=STEPS.map(function(s,i){
+  var cls=i<S.step?'done':(i===S.step?'cur':'');
+  return '<li class="'+cls+'"><span class="no">'+(i<S.step?'✓':(i+1))+'</span><div><span class="tag '+s.mod+'">'+(s.mod==='franck'?'Franck':modName(s.mod))+'</span><b>'+s.t+'</b><div style="color:var(--mut);font-size:12.5px">'+s.d+'</div></div></li>';}).join('');
+ var nb=document.getElementById('next');
+ if(S.step<STEPS.length){nb.disabled=false;nb.textContent=STEPS[S.step].b+' →';}else{nb.disabled=true;nb.textContent='Scénario terminé';}
+}
+function renderJournal(){
+ document.getElementById('journal').innerHTML=S.journal.map(function(j){return '<li><time>'+j.t+'</time><span class="tag '+(j.f?'franck':j.mod)+'">'+(j.f?'Franck':modName(j.mod))+'</span>'+esc(j.txt)+'</li>'}).join('');
+}
+function renderVeille(){
+ var h='';S.veille.forEach(function(v){
+  var b=v.statut==='nouveau'?'<span class="badge info">À traiter</span>':v.statut==='retenu'?'<span class="badge ok">Retenue</span>':'<span class="badge">Écartée</span>';
+  h+='<div class="item'+(v.isNew?' new':'')+'"><div class="h"><div><div class="t">'+esc(v.titre)+'</div><div class="m">'+esc(v.type)+' · '+esc(v.src)+' · pertinence <span class="score">'+v.score+' %</span></div></div>'+b+'</div>'+
+   (v.statut==='nouveau'?'<div class="row" style="margin-top:8px"><button class="btn pri" data-a="retain" data-i="'+v.id+'">Retenir et transmettre au pipeline</button><button class="btn" data-a="drop" data-i="'+v.id+'">Écarter</button></div>':'')+'</div>';v.isNew=false;});
+ document.getElementById('l-veille').innerHTML=h;
+}
+function leadBtn(l){
+ if(l.statut==='nouveau'&&!l.msg)return '<button class="btn pri" data-a="draft" data-i="'+l.id+'">Rédiger le message (IA)</button>';
+ if(l.statut==='nouveau')return '<button class="btn pri" data-a="send" data-i="'+l.id+'">Valider l\'envoi du message</button>';
+ if(l.statut==='contacte')return '<button class="btn" data-a="rdv" data-i="'+l.id+'">Noter un rendez-vous obtenu</button>';
+ if(l.statut==='rdv')return '<button class="btn pri" data-a="prep" data-i="'+l.id+'">Préparer le devis</button>';
+ if(l.statut==='devis')return '<button class="btn" data-a="godevis" data-i="'+l.id+'">Voir le devis</button>';
+ return '';
+}
+function renderLeads(){
+ var h='';S.leads.forEach(function(l){
+  var cls=l.statut==='confirme'?'ok':(l.statut==='nouveau'?'info':'warn');
+  var mo=months(l.date);
+  h+='<div class="item'+(l.isNew?' new':'')+'"><div class="h"><div><div class="t">'+esc(l.nom)+'</div><div class="m">Origine : '+esc(l.orig)+' · chantier prévu le '+fdate(l.date)+' (dans '+String(mo).replace('.',',')+' mois)</div></div><span class="badge '+cls+'">'+LEAD_LAB[l.statut]+'</span></div>'+
+   (l.msg&&l.statut==='nouveau'?'<div class="msg"><b>Message proposé (non envoyé)</b><br>'+esc(l.msg)+'</div>':'')+
+   '<div class="row" style="margin-top:8px">'+leadBtn(l)+'</div></div>';l.isNew=false;});
+ document.getElementById('l-leads').innerHTML=h;
+}
+function devBtn(d){
+ if(d.statut==='alerte')return '<button class="btn pri" data-a="margin" data-i="'+d.id+'">Ajuster les prix (+6 %)</button>';
+ if(d.statut==='brouillon')return '<button class="btn pri" data-a="valid" data-i="'+d.id+'">Valider le devis</button>';
+ if(d.statut==='valide')return '<button class="btn pri" data-a="senddev" data-i="'+d.id+'">Envoyer au client</button>';
+ if(d.statut==='envoye')return '<button class="btn" data-a="accept" data-i="'+d.id+'">Simuler l\'acceptation</button>';
+ return '';
+}
+function renderDevis(){
+ var h='';S.devis.forEach(function(d){
+  var t=tot(d),cls=d.statut==='accepte'?'ok':(d.statut==='alerte'?'bad':(d.statut==='brouillon'?'info':'warn'));
+  var rows=d.lignes.map(function(l){return '<tr><td>'+esc(l[0])+'</td><td class="r">'+l[1]+'</td><td class="r">'+eur(l[2])+'</td><td class="r">'+eur(l[1]*l[2])+'</td></tr>'}).join('');
+  h+='<div class="item'+(d.isNew?' new':'')+'"><div class="h"><div><div class="t">'+esc(d.client)+'</div><div class="m">Total '+eur(t.ht)+' HT · marge <b style="color:'+(t.marge<SEUIL?'var(--bad)':'var(--ok)')+'">'+t.marge.toFixed(1).replace('.',',')+' %</b></div></div><span class="badge '+cls+'">'+DEV_LAB[d.statut]+'</span></div>'+
+   '<table class="l"><thead><tr><th>Prestation</th><th class="r">Qté</th><th class="r">PU HT</th><th class="r">Total HT</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+   (d.statut==='alerte'?'<div class="msg">La marge est sous votre seuil de 45 % : le devis ne peut pas partir sans votre décision.</div>':'')+
+   '<div class="row" style="margin-top:8px">'+devBtn(d)+'</div></div>';d.isNew=false;});
+ document.getElementById('l-devis').innerHTML=h;
+}
+function render(bump){renderChips();renderKpis(bump);renderTabs();renderFlow();renderSteps();renderJournal();renderVeille();renderLeads();renderDevis();}
+
+document.addEventListener('click',function(e){
+ var b=e.target.closest('[data-a]');if(!b)return;
+ var id=parseInt(b.getAttribute('data-i'),10),a=b.getAttribute('data-a');
+ if(a==='retain')retain(id);else if(a==='drop')drop(id);else if(a==='draft')draft(id);else if(a==='send')sendMsg(id);else if(a==='rdv')fixRdv(id);
+ else if(a==='prep')prep(id);else if(a==='godevis'){tab='devis';}else if(a==='margin')fixMargin(id);else if(a==='valid')validate(id);else if(a==='senddev')sendDevis(id);else if(a==='accept')accept(id);
+ render(true);
+});
+document.getElementById('next').onclick=nextStep;
+document.getElementById('reset').onclick=function(){init();tab='pilotage';lastKpi={};render();};
+init();render();
+})();
+</script></body></html>
