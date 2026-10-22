@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Devis et propositions semi-automatisés – GROUPE SASL</title>
+<style>
+:root{--bg:#f4f5f8;--card:#fff;--ink:#1d2433;--mut:#6b7385;--line:#e2e5ec;--acc:#d9531e;--acc2:#b8420f;--ok:#1f8f5f;--warn:#d98a0b;--bad:#c93a3a;--info:#2b6cb0;--navy:#1b2540}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+header{background:var(--navy);color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border-bottom:4px solid var(--acc)}
+header h1{margin:0;font-size:19px;letter-spacing:.3px}
+header .sub{font-size:12.5px;color:#b8c0d6}
+.badge{background:var(--acc);color:#fff;font-size:11px;padding:3px 9px;border-radius:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 30px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--acc)}
+.kpi .lbl{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.4px}
+.kpi .val{font-size:26px;font-weight:700;margin:4px 0 2px;color:var(--navy);transition:transform .3s}
+.kpi .val.pop{transform:scale(1.12);color:var(--acc)}
+.kpi .note{font-size:12px;color:var(--mut)}
+.bar{height:6px;background:var(--line);border-radius:4px;margin-top:6px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .6s}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:18px}
+.panel h2{margin:0 0 4px;font-size:16px;color:var(--navy)}
+.panel p.hint{margin:0 0 12px;color:var(--mut);font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:11px 18px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 2px 0 var(--acc2);transition:background .15s,transform .1s}
+.btn:hover{background:var(--acc2)}
+.btn:active{transform:translateY(1px)}
+.btn.sec{background:#fff;color:var(--navy);border:1px solid var(--line);box-shadow:none;padding:7px 12px;font-size:13px}
+.btn.sec:hover{background:#eef0f5}
+.btn.ok{background:var(--ok);box-shadow:0 2px 0 #176e49}
+.btn.ok:hover{background:#176e49}
+.btn.sm{padding:6px 11px;font-size:13px}
+.filters{display:flex;flex-wrap:wrap;gap:6px;margin-left:auto}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:5px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--navy);color:#fff;border-color:var(--navy)}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:#fff;border:1px solid var(--line);border-left:5px solid var(--mut);border-radius:9px;overflow:hidden}
+.item.s-nouveau{border-left-color:var(--info)}
+.item.s-brouillon{border-left-color:var(--warn)}
+.item.s-valide{border-left-color:var(--ok)}
+.item.s-envoye{border-left-color:#6b4fbf}
+.item.s-accepte{border-left-color:#0f7a4d}
+.item.s-alerte{border-left-color:var(--bad)}
+.item.new{animation:slide .6s ease-out}
+@keyframes slide{0%{opacity:0;transform:translateY(-18px) scale(.97);background:#fff3ea}100%{opacity:1;transform:none}}
+.head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:11px 14px;cursor:pointer}
+.head:hover{background:#fafbfd}
+.head .ttl{font-weight:600;flex:1 1 260px}
+.head .meta{color:var(--mut);font-size:12.5px}
+.tag{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:12px;color:#fff;white-space:nowrap}
+.t-nouveau{background:var(--info)}.t-brouillon{background:var(--warn)}.t-valide{background:var(--ok)}.t-envoye{background:#6b4fbf}.t-accepte{background:#0f7a4d}.t-alerte{background:var(--bad)}
+.amount{font-weight:700;color:var(--navy);min-width:90px;text-align:right}
+.chev{color:var(--mut);transition:transform .2s}
+.item.open .chev{transform:rotate(90deg)}
+.body{display:none;padding:4px 14px 14px;border-top:1px dashed var(--line);background:#fcfcfe}
+.item.open .body{display:block}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:760px){.grid2{grid-template-columns:1fr}.filters{margin-left:0}}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-top:8px}
+th{text-align:left;color:var(--mut);font-weight:600;font-size:12px;padding:5px 6px;border-bottom:1px solid var(--line)}
+td{padding:6px;border-bottom:1px solid #f0f1f5}
+td.r,th.r{text-align:right}
+.marge{margin-top:10px;padding:10px 12px;border-radius:8px;font-size:13.5px;display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.marge.good{background:#e8f6ef;color:#145c3d;border:1px solid #bfe3d1}
+.marge.low{background:#fdecec;color:#8e2323;border:1px solid #f1c0c0}
+.steps{list-style:none;padding:0;margin:8px 0 0;font-size:13px}
+.steps li{padding:4px 0 4px 22px;position:relative;color:var(--mut)}
+.steps li:before{content:"○";position:absolute;left:2px;top:3px}
+.steps li.done{color:var(--ink)}
+.steps li.done:before{content:"✔";color:var(--ok)}
+.sec-t{font-size:12px;text-transform:uppercase;color:var(--mut);letter-spacing:.4px;margin:12px 0 2px;font-weight:700}
+.empty{padding:22px;text-align:center;color:var(--mut)}
+.toast{position:fixed;right:18px;bottom:60px;background:var(--navy);color:#fff;padding:11px 16px;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.25);font-size:14px;opacity:0;transform:translateY(10px);transition:all .3s;pointer-events:none;max-width:320px;z-index:9}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;color:var(--mut);font-size:12.5px;padding:16px;border-top:1px solid var(--line);background:#fff}
+.legend{font-size:12px;color:var(--mut);margin-top:8px}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>GROUPE SASL <span class="badge">Devis &amp; propositions</span></h1>
+    <div class="sub">Événementiel · support technique et artistique · Pélissanne (13)</div>
+  </div>
+  <div class="sub">Poste de validation : Franck LORUSSO, gérant</div>
+</header>
+
+<main>
+  <section class="kpis" aria-label="Indicateurs">
+    <div class="kpi"><div class="lbl">Temps sauvé / semaine</div><div class="val" id="k-time">4h48</div><div class="note">estimation vs 8 h déclarées</div><div class="bar"><i id="b-time"></i></div></div>
+    <div class="kpi"><div class="lbl">Temps moyen par devis</div><div class="val" id="k-avg">1h35</div><div class="note">contre 4 h aujourd'hui</div></div>
+    <div class="kpi"><div class="lbl">Marge moyenne</div><div class="val" id="k-marge">46,2 %</div><div class="note">seuil de protection : 45 %</div></div>
+    <div class="kpi"><div class="lbl">Devis générés</div><div class="val" id="k-count">0</div><div class="note">dont <span id="k-valid">0</span> validés par Franck</div></div>
+    <div class="kpi"><div class="lbl">Taux d'acceptation</div><div class="val" id="k-acc">0 %</div><div class="note">devis acceptés / envoyés</div></div>
+  </section>
+
+  <section class="panel">
+    <h2>Démonstration en direct</h2>
+    <p class="hint">Une demande client arrive par email, téléphone ou Messenger : le brouillon de devis et la proposition sont préparés, la marge est contrôlée, Franck garde toujours la main.</p>
+    <div class="actions">
+      <button class="btn" id="btn-sim">⚡ Simuler une demande client entrante</button>
+      <button class="btn sec" id="btn-reset">Réinitialiser la démo</button>
+      <div class="filters" id="filters"></div>
+    </div>
+    <div class="legend">Les montants et dossiers sont fictifs. Aucun envoi réel : la validation humaine est simulée.</div>
+  </section>
+
+  <section class="panel">
+    <h2>Dossiers de devis &amp; propositions</h2>
+    <p class="hint">Cliquez sur une fiche pour la déplier : lignes de prestation, contrôle de marge, étapes du processus.</p>
+    <div class="list" id="list"></div>
+  </section>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "catalogue": {
+  "LED": "Écran LED P3.9 (m²)",
+  "SON": "Sonorisation façade + régie",
+  "LUM": "Kit lumière asservie",
+  "MAP": "Création mapping vidéo",
+  "SCE": "Montage scène modulaire (m²)",
+  "ELE": "Distribution électrique salon",
+  "TEC": "Technicien (journée)"
+ },
+ "initial": [
+  {"id":"D-2026-041","client":"Agence Horizon Events","event":"Gala d'entreprise, Aix-en-Provence","statut":"envoye","type":"Mail","date":"12/10","temps":95,
+   "lignes":[["Écran LED P3.9 (m²)",24,95,52],["Sonorisation façade + régie",1,1400,780],["Technicien (journée)",4,420,230]]},
+  {"id":"D-2026-042","client":"Salon Provence Habitat","event":"Salon professionnel, Parc Chanot Marseille","statut":"accepte","type":"Téléphone","date":"09/10","temps":120,
+   "lignes":[["Distribution électrique salon",1,2100,1150],["Montage scène modulaire (m²)",40,38,19],["Technicien (journée)",6,420,230]]},
+  {"id":"D-2026-043","client":"Mairie de Salon-de-Provence","event":"Fête de la lumière","statut":"valide","type":"Mail","date":"14/10","temps":110,
+   "lignes":[["Création mapping vidéo",1,4800,2300],["Kit lumière asservie",3,950,480],["Technicien (journée)",3,420,230]]},
+  {"id":"D-2026-044","client":"Maison Verdier","event":"Lancement produit, Avignon","statut":"brouillon","type":"Messenger","date":"16/10","temps":70,
+   "lignes":[["Écran LED P3.9 (m²)",12,95,52],["Kit lumière asservie",2,950,480],["Technicien (journée)",2,420,230]]},
+  {"id":"D-2026-045","client":"Festival Les Nuits d'Été","event":"Scène principale, 3 jours","statut":"alerte","type":"Mail","date":"17/10","temps":85,
+   "lignes":[["Montage scène modulaire (m²)",120,38,30],["Sonorisation façade + régie",2,1400,1020],["Technicien (journée)",9,420,330]]},
+  {"id":"D-2026-046","client":"Cabinet Roussel &amp; Associés","event":"Séminaire annuel, Pélissanne","statut":"nouveau","type":"Téléphone","date":"18/10","temps":0,
+   "lignes":[["Sonorisation façade + régie",1,1400,780],["Kit lumière asservie",1,950,480]]}
+ ],
+ "scenarios": [
+  {"client":"Groupe Méditerranée Congrès","event":"Congrès médical, Palais des Congrès Marseille","type":"Mail","lignes":[["Écran LED P3.9 (m²)",36,95,52],["Sonorisation façade + régie",2,1400,780],["Technicien (journée)",8,420,230]]},
+  {"client":"Agence Kaléidoscope","event":"Soirée de lancement avec mapping, Arles","type":"Messenger","lignes":[["Création mapping vidéo",1,4800,2300],["Kit lumière asservie",4,950,480],["Technicien (journée)",5,420,230]]},
+  {"client":"Salon du Mariage Provence","event":"Salon grand public, Aix Expo","type":"Mail","lignes":[["Distribution électrique salon",1,2100,1150],["Montage scène modulaire (m²)",30,38,19],["Écran LED P3.9 (m²)",8,95,52]]},
+  {"client":"Ville de Miramas","event":"Concert du 14 juillet","type":"Téléphone","lignes":[["Montage scène modulaire (m²)",80,38,30],["Sonorisation façade + régie",2,1400,1010],["Technicien (journée)",7,420,330]]},
+  {"client":"Laboratoires Alpha Santé","event":"Convention d'équipe, Marseille","type":"Mail","lignes":[["Sonorisation façade + régie",1,1400,780],["Écran LED P3.9 (m²)",16,95,52],["Kit lumière asservie",2,950,480],["Technicien (journée)",3,420,230]]}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var data = JSON.parse(document.getElementById('mock-data').textContent);
+  var STATUTS = {
+    nouveau:'Nouvelle demande', brouillon:'Brouillon prêt', valide:'Validé par Franck',
+    envoye:'Envoyé au client', accepte:'Accepté → facture', alerte:'Marge sous 45 %'
+  };
+  var ORDER = ['nouveau','brouillon','alerte','valide','envoye','accepte'];
+  var SEUIL = 45;
+  var state = {items:[], filter:'tous', open:{}, scenIdx:0, counter:46, genMinutes:[]};
+
+  function decode(s){var d=document.createElement('textarea');d.innerHTML=s;return d.value;}
+  function eur(n){return Math.round(n).toLocaleString('fr-FR')+' €';}
+  function totals(it){
+    var ht=0,cout=0;
+    it.lignes.forEach(function(l){ht+=l[1]*l[2];cout+=l[1]*l[3];});
+    return {ht:ht,cout:cout,marge:ht>0?(ht-cout)/ht*100:0};
+  }
+  function hm(min){var h=Math.floor(min/60),m=Math.round(min%60);return h+'h'+(m<10?'0':'')+m;}
+  function toast(msg){
+    var t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+    clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove('show');},2400);
+  }
+  function pop(id){
+    var e=document.getElementById(id);if(!e)return;
+    e.classList.add('pop');setTimeout(function(){e.classList.remove('pop');},500);
+  }
+
+  function load(){
+    state.items=data.initial.map(function(d){
+      var o=JSON.parse(JSON.stringify(d));o.client=decode(o.client);return o;
+    });
+    state.open={};state.scenIdx=0;state.counter=46;state.filter='tous';
+    state.genMinutes=state.items.filter(function(i){return i.temps>0;}).map(function(i){return i.temps;});
+    state.items.sort(function(a,b){return b.id<a.id?-1:1;});
+  }
+
+  function updateKpis(){
+    var n=state.items.length;
+    var valides=state.items.filter(function(i){return ['valide','envoye','accepte'].indexOf(i.statut)>-1;}).length;
+    var envoyes=state.items.filter(function(i){return ['envoye','accepte'].indexOf(i.statut)>-1;}).length;
+    var acceptes=state.items.filter(function(i){return i.statut==='accepte';}).length;
+    var sumHt=0,sumM=0;
+    state.items.forEach(function(i){var t=totals(i);sumHt+=t.ht;sumM+=(t.ht-t.cout);});
+    var marge=sumHt>0?sumM/sumHt*100:0;
+    var avg=state.genMinutes.length?state.genMinutes.reduce(function(a,b){return a+b;},0)/state.genMinutes.length:95;
+    var gainParDevis=240-avg;
+    var semaine=Math.min(Math.max(2*gainParDevis/60,0),8);
+    var base=4.8,extra=Math.max(0,(n-6))*0.15;
+    var shown=Math.min(base+extra,8);
+    setVal('k-time',hm(shown*60));
+    document.getElementById('b-time').style.width=Math.min(shown/8*100,100)+'%';
+    setVal('k-avg',hm(avg));
+    setVal('k-marge',marge.toFixed(1).replace('.',',')+' %');
+    setVal('k-count',String(n));
+    document.getElementById('k-valid').textContent=valides;
+    setVal('k-acc',(envoyes>0?Math.round(acceptes/envoyes*100):0)+' %');
+  }
+  function setVal(id,v){
+    var e=document.getElementById(id);
+    if(e.textContent!==v){e.textContent=v;pop(id);}
+  }
+
+  function renderFilters(){
+    var f=document.getElementById('filters');
+    var opts=[['tous','Tous']].concat(ORDER.map(function(s){return [s,STATUTS[s]];}));
+    f.innerHTML='';
+    opts.forEach(function(o){
+      var b=document.createElement('button');
+      b.className='chip'+(state.filter===o[0]?' on':'');
+      var c=o[0]==='tous'?state.items.length:state.items.filter(function(i){return i.statut===o[0];}).length;
+      b.textContent=o[1]+' ('+c+')';
+      b.onclick=function(){state.filter=o[0];render();};
+      f.appendChild(b);
+    });
+  }
+
+  function stepsFor(it){
+    var order=['nouveau','brouillon','valide','envoye','accepte'];
+    var idx=it.statut==='alerte'?1:order.indexOf(it.statut);
+    var labels=['Demande qualifiée (checklist)','Brouillon devis + proposition PowerPoint générés','Relu et validé par Franck','Envoyé au client, relance J+5 planifiée','Accepté : facture Pennylane + chantier planifié'];
+    return labels.map(function(l,i){return '<li class="'+(i<=idx?'done':'')+'">'+l+'</li>';}).join('');
+  }
+
+  function actionsFor(it){
+    var a='';
+    if(it.statut==='nouveau') a+='<button class="btn sm" data-a="gen">Générer le brouillon</button>';
+    if(it.statut==='brouillon') a+='<button class="btn sm ok" data-a="valider">✔ Relire et valider</button>';
+    if(it.statut==='alerte') a+='<button class="btn sm" data-a="ajuster">Ajuster les prix pour retrouver 45 %</button>';
+    if(it.statut==='valide') a+='<button class="btn sm" data-a="envoyer">Envoyer au client</button>';
+    if(it.statut==='envoye') a+='<button class="btn sm ok" data-a="accepter">Marquer comme accepté</button>';
+    if(it.statut==='accepte') a+='<span class="meta">Facture générée dans Pennylane (simulation)</span>';
+    return a;
+  }
+
+  function render(){
+    renderFilters();
+    var list=document.getElementById('list');
+    var arr=state.items.filter(function(i){return state.filter==='tous'||i.statut===state.filter;});
+    if(!arr.length){list.innerHTML='<div class="empty">Aucun dossier dans cette catégorie.</div>';updateKpis();return;}
+    list.innerHTML='';
+    arr.forEach(function(it){
+      var t=totals(it);
+      var el=document.createElement('div');
+      el.className='item s-'+it.statut+(state.open[it.id]?' open':'')+(it._new?' new':'');
+      it._new=false;
+      var rows=it.lignes.map(function(l){
+        return '<tr><td>'+decode(l[0])+'</td><td class="r">'+l[1]+'</td><td class="r">'+eur(l[2])+'</td><td class="r">'+eur(l[1]*l[2])+'</td></tr>';
+      }).join('');
+      var good=t.marge>=SEUIL;
+      el.innerHTML=
+        '<div class="head"><span class="chev">▶</span>'+
+        '<div class="ttl">'+it.client+'<div class="meta">'+decode(it.event)+' · '+it.id+' · via '+it.type+'</div></div>'+
+        '<span class="tag t-'+it.statut+'">'+STATUTS[it.statut]+'</span>'+
+        '<span class="amount">'+eur(t.ht)+' HT</span></div>'+
+        '<div class="body"><div class="grid2"><div>'+
+        '<div class="sec-t">Lignes de prestation</div>'+
+        '<table><thead><tr><th>Prestation</th><th class="r">Qté</th><th class="r">PU HT</th><th class="r">Total HT</th></tr></thead><tbody>'+rows+'</tbody></table>'+
+        '<div class="marge '+(good?'good':'low')+'"><span><strong>Marge : '+t.marge.toFixed(1).replace('.',',')+' %</strong> (seuil '+SEUIL+' %)</span><span>'+(good?'✔ Marge protégée':'⚠ Sous le seuil : validation bloquée')+'</span></div>'+
+        '</div><div>'+
+        '<div class="sec-t">Avancement du dossier</div><ul class="steps">'+stepsFor(it)+'</ul>'+
+        '<div class="sec-t">Temps de préparation</div><div class="meta">'+(it.temps>0?hm(it.temps)+' (au lieu de ~4 h)':'Pas encore généré')+'</div>'+
+        '<div class="sec-t">Actions</div><div class="actions">'+actionsFor(it)+'</div>'+
+        '</div></div></div>';
+      el.querySelector('.head').onclick=function(){state.open[it.id]=!state.open[it.id];render();};
+      el.querySelectorAll('[data-a]').forEach(function(b){
+        b.onclick=function(e){e.stopPropagation();act(it,b.getAttribute('data-a'));};
+      });
+      list.appendChild(el);
+    });
+    updateKpis();
+  }
+
+  function act(it,a){
+    if(a==='gen'){
+      it.temps=60+Math.round(Math.random()*40);state.genMinutes.push(it.temps);
+      it.statut=totals(it).marge>=SEUIL?'brouillon':'alerte';
+      toast(it.statut==='alerte'?'Brouillon généré : alerte marge':'Brouillon de devis et proposition générés');
+    }else if(a==='valider'){
+      it.statut='valide';toast('Devis validé par Franck');
+    }else if(a==='ajuster'){
+      var guard=0;
+      while(totals(it).marge<SEUIL+0.5&&guard<80){
+        it.lignes.forEach(function(l){l[2]=Math.round(l[2]*1.02);});guard++;
+      }
+      it.statut='brouillon';toast('Prix ajustés : marge de '+totals(it).marge.toFixed(1).replace('.',',')+' %');
+    }else if(a==='envoyer'){
+      it.statut='envoye';toast('Devis envoyé (simulation) · relance J+5 planifiée');
+    }else if(a==='accepter'){
+      it.statut='accepte';toast('Accepté : facture créée et chantier transmis à la planification');
+    }
+    render();
+  }
+
+  function simulate(){
+    var sc=data.scenarios[state.scenIdx%data.scenarios.length];state.scenIdx++;
+    state.counter++;
+    var it={
+      id:'D-2026-0'+state.counter,client:decode(sc.client),event:sc.event,type:sc.type,
+      date:'auj.',temps:0,statut:'nouveau',_new:true,
+      lignes:JSON.parse(JSON.stringify(sc.lignes))
+    };
+    it.temps=55+Math.round(Math.random()*45);
+    state.genMinutes.push(it.temps);
+    it.statut=totals(it).marge>=SEUIL?'brouillon':'alerte';
+    state.items.unshift(it);
+    state.open[it.id]=true;
+    state.filter='tous';
+    render();
+    toast('Nouvelle demande de '+it.client+' : brouillon prêt en '+hm(it.temps));
+  }
+
+  document.getElementById('btn-sim').onclick=simulate;
+  document.getElementById('btn-reset').onclick=function(){load();render();toast('Démo réinitialisée');};
+
+  load();render();
+})();
+</script>
+</body>
+</html>
