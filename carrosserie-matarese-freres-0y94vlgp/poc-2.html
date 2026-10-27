@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Onboarding client et assurance – Carrosserie Matarese Frères</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1d2733;--muted:#6b7785;--line:#dde3ea;--accent:#0f5c8e;--accent-d:#0a4467;--ok:#1f8a4c;--warn:#c27a0a;--bad:#c0392b;--info:#2d6cdf}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;min-height:100vh;display:flex;flex-direction:column}
+header{background:#14202c;color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border-bottom:4px solid var(--accent)}
+header h1{font-size:1.15rem;font-weight:700;letter-spacing:.3px}
+header small{display:block;color:#9fb2c4;font-size:.78rem;font-weight:400;margin-top:2px}
+.badge-live{background:#1f8a4c;color:#fff;font-size:.72rem;padding:4px 10px;border-radius:20px;font-weight:600}
+main{flex:1;max-width:1150px;width:100%;margin:0 auto;padding:20px 16px}
+.sec-title{font-size:.8rem;text-transform:uppercase;letter-spacing:1px;color:var(--muted);font-weight:700;margin:6px 0 10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:22px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--accent)}
+.kpi .v{font-size:1.7rem;font-weight:700;color:var(--accent-d);transition:transform .3s}
+.kpi .v.bump{transform:scale(1.15)}
+.kpi .l{font-size:.82rem;color:var(--muted);margin-top:2px}
+.kpi .s{font-size:.72rem;color:var(--ok);margin-top:4px;font-weight:600}
+.bar{height:6px;background:#e6ecf2;border-radius:4px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .6s}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.filters button{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:18px;font-size:.8rem;cursor:pointer}
+.filters button.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cta{background:var(--accent);color:#fff;border:0;padding:12px 20px;border-radius:8px;font-size:.95rem;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(15,92,142,.3)}
+.cta:hover{background:var(--accent-d)}
+.cta:active{transform:translateY(1px)}
+.list{display:flex;flex-direction:column;gap:10px}
+.fiche{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--muted);border-radius:10px;overflow:hidden}
+.fiche.new{animation:slide .6s ease-out}
+@keyframes slide{0%{opacity:0;transform:translateY(-18px) scale(.98);background:#e8f3fb}100%{opacity:1;transform:none;background:#fff}}
+.fiche[data-st="nouveau"]{border-left-color:var(--info)}
+.fiche[data-st="incomplet"]{border-left-color:var(--bad)}
+.fiche[data-st="verif"]{border-left-color:var(--warn)}
+.fiche[data-st="cree"]{border-left-color:var(--ok)}
+.fhead{display:flex;flex-wrap:wrap;align-items:center;gap:10px 14px;padding:12px 14px;cursor:pointer}
+.fhead:hover{background:#f8fafc}
+.fid{font-weight:700;font-size:.85rem;color:var(--accent-d);min-width:80px}
+.fmain{flex:1;min-width:200px}
+.fmain b{display:block;font-size:.95rem}
+.fmain span{font-size:.8rem;color:var(--muted)}
+.chan{font-size:.72rem;background:#eef2f6;color:var(--muted);padding:3px 8px;border-radius:12px}
+.st{font-size:.74rem;font-weight:700;padding:4px 10px;border-radius:14px;color:#fff;white-space:nowrap}
+.st.nouveau{background:var(--info)}.st.incomplet{background:var(--bad)}.st.verif{background:var(--warn)}.st.cree{background:var(--ok)}
+.chev{color:var(--muted);transition:transform .2s;font-size:.8rem}
+.fiche.open .chev{transform:rotate(90deg)}
+.fbody{display:none;border-top:1px solid var(--line);padding:14px;background:#fbfcfd}
+.fiche.open .fbody{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 18px;margin-bottom:12px}
+.grid div small{display:block;color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.5px}
+.grid div span{font-size:.88rem;font-weight:600}
+.pieces{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.piece{font-size:.78rem;padding:4px 10px;border-radius:6px;border:1px solid var(--line);background:#fff}
+.piece.ok{border-color:#b6dfc6;background:#eaf7ef;color:#17673a}
+.piece.ko{border-color:#f0c2bc;background:#fcefed;color:#9c2d21}
+.note{font-size:.82rem;background:#eef5fb;border-left:3px solid var(--accent);padding:8px 10px;margin-bottom:12px;border-radius:4px}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.actions button{border:1px solid var(--accent);background:#fff;color:var(--accent);padding:7px 12px;border-radius:6px;font-size:.8rem;font-weight:600;cursor:pointer}
+.actions button:hover{background:var(--accent);color:#fff}
+.actions button.sec{border-color:var(--line);color:var(--ink)}
+.actions button.sec:hover{background:#e9eef3;color:var(--ink)}
+.empty{text-align:center;color:var(--muted);padding:26px;background:#fff;border:1px dashed var(--line);border-radius:10px;font-size:.9rem}
+.toast{position:fixed;bottom:60px;right:20px;background:#14202c;color:#fff;padding:12px 16px;border-radius:8px;font-size:.85rem;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px;z-index:9}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;font-size:.76rem;color:var(--muted);padding:14px;border-top:1px solid var(--line);background:#fff}
+@media(max-width:600px){header h1{font-size:1rem}.kpi .v{font-size:1.4rem}.cta{width:100%}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>CARROSSERIE MATARESE FRÈRES<small>Salon-de-Provence · Onboarding client et assurance – création automatisée du dossier</small></small></h1>
+  </div>
+  <span class="badge-live">● Poste administratif · Alpha 2C (simulé)</span>
+</header>
+
+<main>
+  <div class="sec-title">Indicateurs de performance (estimation)</div>
+  <section class="kpis" id="kpis"></section>
+
+  <div class="toolbar">
+    <div>
+      <div class="sec-title" style="margin:0 0 6px">Dossiers de prise en charge</div>
+      <div class="filters" id="filters"></div>
+    </div>
+    <button class="cta" id="btnSim">＋ Simuler une nouvelle demande de prise en charge</button>
+  </div>
+
+  <div class="list" id="list"></div>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "initial":[
+  {"id":"D-2611","client":"M. Bernard Roux","veh":"Renault Clio IV · AB-123-CD","assur":"MAAF","sinistre":"Choc arrière – parking","canal":"Téléphone","statut":"cree","pieces":{"Carte grise":1,"Attestation d'assurance":1,"Constat amiable":1,"Mandat expert":1},"note":"Dossier créé dans Alpha 2C. Confirmation SMS envoyée au client."},
+  {"id":"D-2612","client":"Mme Karine Lopez","veh":"Peugeot 308 · FG-456-HJ","assur":"AXA","sinistre":"Choc latéral droit – carrefour","canal":"Email","statut":"verif","pieces":{"Carte grise":1,"Attestation d'assurance":1,"Constat amiable":1,"Mandat expert":1},"note":"Extraction IA terminée, en attente de la vérification humaine avant création."},
+  {"id":"D-2613","client":"M. Julien Fabre","veh":"Citroën C3 · KL-789-MN","assur":"Groupama","sinistre":"Bris de glace et capot enfoncé","canal":"Email","statut":"incomplet","pieces":{"Carte grise":1,"Attestation d'assurance":0,"Constat amiable":0,"Mandat expert":0},"note":"Relance automatique envoyée au client pour 3 pièces manquantes."},
+  {"id":"D-2614","client":"Mme Nadia Benali","veh":"Dacia Sandero · PQ-321-RS","assur":"Matmut","sinistre":"Choc avant – dossier assurance","canal":"Dépôt véhicule","statut":"nouveau","pieces":{"Carte grise":1,"Attestation d'assurance":1,"Constat amiable":0,"Mandat expert":0},"note":"Formulaire rempli à l'atelier. Passage de l'expert à planifier."},
+  {"id":"D-2615","client":"M. Pierre Giraud","veh":"Ford Fiesta · TU-654-VW","assur":"Allianz","sinistre":"Rayures et aile arrière gauche","canal":"Téléphone","statut":"cree","pieces":{"Carte grise":1,"Attestation d'assurance":1,"Constat amiable":1,"Mandat expert":1},"note":"Véhicule de prêt réservé. Chiffrage Iris déclenché."},
+  {"id":"D-2616","client":"Mme Sophie Marchand","veh":"Volkswagen Golf VII · XY-987-ZA","assur":"MMA","sinistre":"Choc porte conducteur","canal":"Email","statut":"incomplet","pieces":{"Carte grise":0,"Attestation d'assurance":1,"Constat amiable":1,"Mandat expert":0},"note":"Carte grise illisible sur la photo. Nouvelle demande envoyée au client."}
+ ],
+ "scenarios":[
+  {"client":"M. Thierry Morel","veh":"Renault Captur · BC-111-DE","assur":"MAIF","sinistre":"Choc arrière – feu stop cassé","canal":"Email","pieces":{"Carte grise":1,"Attestation d'assurance":1,"Constat amiable":1,"Mandat expert":1},"note":"Mail entrant lu par l'IA : 12 champs extraits, dossier complet."},
+  {"client":"Mme Élodie Garnier","veh":"Toyota Yaris · FG-222-HI","assur":"Groupama","sinistre":"Choc latéral gauche – stationnement","canal":"Téléphone","pieces":{"Carte grise":1,"Attestation d'assurance":0,"Constat amiable":1,"Mandat expert":0},"note":"Appel saisi via le formulaire standard. Attestation et mandat expert à réclamer."},
+  {"client":"M. Frédéric Aubert","veh":"BMW Série 1 · JK-333-LM","assur":"AXA","sinistre":"Choc avant – pare-chocs et phare","canal":"Dépôt véhicule","pieces":{"Carte grise":1,"Attestation d'assurance":1,"Constat amiable":1,"Mandat expert":0},"note":"Expert à solliciter : mandat non reçu de l'assureur."},
+  {"client":"Mme Laurence Perrin","veh":"Fiat 500 · NP-444-QR","assur":"Matmut","sinistre":"Grêle – toit et capot","canal":"Email","pieces":{"Carte grise":1,"Attestation d'assurance":1,"Constat amiable":1,"Mandat expert":1},"note":"Sinistre climatique. Dossier prêt pour la vérification humaine."},
+  {"client":"M. Olivier Blanc","veh":"Audi A3 · ST-555-UV","assur":"Allianz","sinistre":"Choc arrière sur autoroute","canal":"Email","pieces":{"Carte grise":0,"Attestation d'assurance":1,"Constat amiable":0,"Mandat expert":1},"note":"Pièces manquantes détectées. Relance automatique prête."}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var data=JSON.parse(document.getElementById('mock-data').textContent);
+  var ST={nouveau:'Nouveau',incomplet:'Pièces manquantes',verif:'À vérifier',cree:'Dossier créé'};
+  var FILTERS=[['all','Tous'],['nouveau','Nouveaux'],['incomplet','Pièces manquantes'],['verif','À vérifier'],['cree','Créés dans Alpha 2C']];
+  var dossiers=[],filtre='all',idx=0,nextId=2617,opened={};
+  var base={minutes:0,dossiers:0};
+
+  function pct(p){var k=Object.keys(p),n=0;k.forEach(function(x){if(p[x])n++});return k.length?Math.round(n/k.length*100):0}
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+  data.initial.forEach(function(d){dossiers.push(JSON.parse(JSON.stringify(d)))});
+
+  function kpis(){
+    var tot=dossiers.length;
+    var complets=dossiers.filter(function(d){return pct(d.pieces)===100}).length;
+    var creesAuto=dossiers.filter(function(d){return d.statut==='cree'}).length;
+    var manquants=dossiers.filter(function(d){return d.statut==='incomplet'}).length;
+    var minSauvees=tot*14;
+    var h=(minSauvees/60+3.0).toFixed(1).replace('.',',');
+    var tauxCompl=tot?Math.round(complets/tot*100):0;
+    var k=[
+      {v:'3 h/sem',l:'Temps administratif sauvé (cible du rapport)',s:'Base : 60 % de 5 h de collecte et saisie',b:60,raw:1},
+      {v:h.replace(',',',')+' h',l:'Heures récupérées sur la session de démo',s:'≈ 14 min gagnées par dossier',b:Math.min(100,tot*8),raw:0,id:'h'},
+      {v:tauxCompl+' %',l:'Dossiers complets dès la première saisie',s:'Cible : 90 %',b:tauxCompl,raw:0},
+      {v:String(creesAuto),l:'Dossiers créés dans Alpha 2C',s:manquants+' en attente de pièces',b:tot?Math.round(creesAuto/tot*100):0,raw:0}
+    ];
+    var el=document.getElementById('kpis');
+    el.innerHTML=k.map(function(x){return '<div class="kpi"><div class="v">'+esc(x.v)+'</div><div class="l">'+esc(x.l)+'</div><div class="s">'+esc(x.s)+'</div><div class="bar"><i style="width:'+x.b+'%"></i></div></div>'}).join('');
+  }
+
+  function bump(){
+    var v=document.querySelectorAll('.kpi .v');
+    for(var i=0;i<v.length;i++){(function(e){e.classList.add('bump');setTimeout(function(){e.classList.remove('bump')},350)})(v[i])}
+  }
+
+  function renderFilters(){
+    document.getElementById('filters').innerHTML=FILTERS.map(function(f){
+      var n=f[0]==='all'?dossiers.length:dossiers.filter(function(d){return d.statut===f[0]}).length;
+      return '<button data-f="'+f[0]+'" class="'+(filtre===f[0]?'on':'')+'">'+f[1]+' ('+n+')</button>';
+    }).join('');
+    var bs=document.querySelectorAll('#filters button');
+    for(var i=0;i<bs.length;i++){bs[i].onclick=function(){filtre=this.getAttribute('data-f');render()}}
+  }
+
+  function ficheHTML(d,isNew){
+    var piecesH=Object.keys(d.pieces).map(function(p){return '<span class="piece '+(d.pieces[p]?'ok':'ko')+'">'+(d.pieces[p]?'✔ ':'✖ ')+esc(p)+'</span>'}).join('');
+    var c=pct(d.pieces);
+    var acts='';
+    if(d.statut==='incomplet')acts+='<button data-a="relance" data-id="'+d.id+'">Relancer le client (pièces)</button><button class="sec" data-a="recu" data-id="'+d.id+'">Pièces reçues</button>';
+    if(d.statut==='nouveau')acts+='<button data-a="verif" data-id="'+d.id+'">Lancer le contrôle de complétude</button>';
+    if(d.statut==='verif')acts+='<button data-a="creer" data-id="'+d.id+'">Valider et créer dans Alpha 2C</button><button class="sec" data-a="manque" data-id="'+d.id+'">Signaler une pièce manquante</button>';
+    if(d.statut==='cree')acts+='<button data-a="pret" data-id="'+d.id+'">Réserver un véhicule de prêt</button><button class="sec" data-a="chiffrage" data-id="'+d.id+'">Lancer le chiffrage Iris</button>';
+    return '<div class="fiche'+(isNew?' new':'')+(opened[d.id]?' open':'')+'" data-st="'+d.statut+'" data-id="'+d.id+'">'+
+      '<div class="fhead" data-h="'+d.id+'"><span class="fid">'+d.id+'</span><div class="fmain"><b>'+esc(d.client)+' – '+esc(d.veh)+'</b><span>'+esc(d.sinistre)+' · Assureur : '+esc(d.assur)+'</span></div><span class="chan">'+esc(d.canal)+'</span><span class="st '+d.statut+'">'+ST[d.statut]+'</span><span class="chev">▶</span></div>'+
+      '<div class="fbody"><div class="grid"><div><small>Assurance</small><span>'+esc(d.assur)+'</span></div><div><small>Nature du choc</small><span>'+esc(d.sinistre)+'</span></div><div><small>Complétude du dossier</small><span>'+c+' %</span></div><div><small>Canal d\'entrée</small><span>'+esc(d.canal)+'</span></div></div>'+
+      '<div class="pieces">'+piecesH+'</div><div class="note">'+esc(d.note)+'</div><div class="actions">'+acts+'</div></div></div>';
+  }
+
+  function render(newId){
+    renderFilters();
+    var l=dossiers.filter(function(d){return filtre==='all'||d.statut===filtre});
+    var el=document.getElementById('list');
+    el.innerHTML=l.length?l.map(function(d){return ficheHTML(d,d.id===newId)}).join(''):'<div class="empty">Aucun dossier dans cette catégorie pour le moment.</div>';
+    var hs=el.querySelectorAll('.fhead');
+    for(var i=0;i<hs.length;i++){hs[i].onclick=function(){var id=this.getAttribute('data-h');opened[id]=!opened[id];this.parentNode.classList.toggle('open')}}
+    var bs=el.querySelectorAll('.actions button');
+    for(var j=0;j<bs.length;j++){bs[j].onclick=function(e){e.stopPropagation();act(this.getAttribute('data-a'),this.getAttribute('data-id'))}}
+    kpis();
+  }
+
+  function find(id){for(var i=0;i<dossiers.length;i++){if(dossiers[i].id===id)return dossiers[i]}return null}
+
+  function act(a,id){
+    var d=find(id);if(!d)return;
+    if(a==='relance'){d.note='Relance automatique envoyée au client : '+Object.keys(d.pieces).filter(function(p){return !d.pieces[p]}).join(', ')+'.';toast('Relance envoyée au client (simulation).')}
+    if(a==='recu'){Object.keys(d.pieces).forEach(function(p){d.pieces[p]=1});d.statut='verif';d.note='Pièces reçues. Extraction IA effectuée, dossier à vérifier.';toast('Pièces reçues : dossier passé à vérifier.')}
+    if(a==='verif'){if(pct(d.pieces)<100){d.statut='incomplet';d.note='Contrôle de complétude : pièces manquantes, relance automatique prête.';toast('Pièces manquantes détectées.')}else{d.statut='verif';d.note='Contrôle de complétude OK. En attente de la vérification humaine.';toast('Dossier complet, à vérifier.')}}
+    if(a==='creer'){d.statut='cree';d.note='Dossier créé dans Alpha 2C. Confirmation envoyée au client et information de l\'atelier.';toast('Dossier '+d.id+' créé dans Alpha 2C.')}
+    if(a==='manque'){var k=Object.keys(d.pieces);for(var i=0;i<k.length;i++){if(d.pieces[k[i]]){d.pieces[k[i]]=0;break}}d.statut='incomplet';d.note='Pièce signalée manquante lors de la vérification. Relance du client à envoyer.';toast('Dossier repassé en pièces manquantes.')}
+    if(a==='pret'){d.note='Véhicule de prêt réservé pour la durée des réparations.';toast('Véhicule de prêt réservé.')}
+    if(a==='chiffrage'){d.note='Chiffrage Iris déclenché. Passage de l\'expert à planifier.';toast('Chiffrage lancé (SOP 3).')}
+    opened[id]=true;render();bump();
+  }
+
+  var tt;
+  function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2400)}
+
+  document.getElementById('btnSim').onclick=function(){
+    var s=data.scenarios[idx%data.scenarios.length];idx++;
+    var d=JSON.parse(JSON.stringify(s));
+    d.id='D-'+(nextId++);
+    var c=pct(d.pieces);
+    d.statut=c===100?'verif':'incomplet';
+    if(d.canal==='Dépôt véhicule'&&c===100)d.statut='nouveau';
+    filtre='all';opened[d.id]=true;
+    dossiers.unshift(d);
+    render(d.id);bump();
+    toast('Nouvelle demande reçue : '+d.client+' ('+d.assur+').');
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
