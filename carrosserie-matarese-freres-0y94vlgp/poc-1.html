@@ -1,0 +1,282 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POC – Gestion des emails et relances d'experts – Carrosserie Matarese Frères</title>
+<style>
+:root{
+  --bg:#f3f5f8;--card:#ffffff;--ink:#1c2733;--muted:#6b7785;--line:#e2e7ee;
+  --accent:#0b5cad;--accent-d:#084a8c;--accent-l:#e6f0fa;
+  --ok:#1f8a4c;--ok-l:#e3f5ea;--warn:#b86e00;--warn-l:#fff1d9;--bad:#c0392b;--bad-l:#fde8e5;--info:#5b4bb7;--info-l:#ece9fa;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45;min-height:100vh;display:flex;flex-direction:column}
+header{background:#14233a;color:#fff;padding:14px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px}
+.brand{display:flex;align-items:center;gap:12px}
+.logo{width:38px;height:38px;border-radius:9px;background:var(--accent);display:grid;place-items:center;font-weight:700;font-size:17px;letter-spacing:.5px}
+.brand h1{font-size:17px;font-weight:650}
+.brand small{display:block;font-size:12px;color:#aebbd0;font-weight:400}
+.mailbox{font-size:12.5px;color:#cfd9e8;background:#1e3453;padding:6px 12px;border-radius:20px}
+main{flex:1;max-width:1180px;width:100%;margin:0 auto;padding:22px 18px 30px}
+.title-row{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:12px;margin-bottom:16px}
+.title-row h2{font-size:21px}
+.title-row p{color:var(--muted);font-size:13.5px;margin-top:2px}
+.btn{border:0;cursor:pointer;font-family:inherit;font-size:14px;font-weight:600;border-radius:8px;padding:11px 18px;transition:.15s}
+.btn-primary{background:var(--accent);color:#fff;box-shadow:0 2px 6px rgba(11,92,173,.3)}
+.btn-primary:hover{background:var(--accent-d);transform:translateY(-1px)}
+.btn-primary:active{transform:translateY(0)}
+.btn-ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn-ghost:hover{background:var(--accent-l)}
+.btn-sm{padding:7px 12px;font-size:12.5px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:15px 16px;position:relative;overflow:hidden}
+.kpi:before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:var(--accent)}
+.kpi .lbl{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.kpi .val{font-size:28px;font-weight:700;margin:4px 0 2px;transition:color .3s}
+.kpi .sub{font-size:12px;color:var(--muted)}
+.kpi.bump .val{color:var(--accent)}
+.bar{height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .6s}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:12px}
+.panel-h{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;padding:14px 16px;border-bottom:1px solid var(--line)}
+.panel-h h3{font-size:16px}
+.filters{display:flex;gap:6px;flex-wrap:wrap}
+.chip{border:1px solid var(--line);background:#fff;border-radius:18px;padding:5px 12px;font-size:12.5px;cursor:pointer;color:var(--muted);font-family:inherit}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.chip:hover:not(.on){background:var(--accent-l)}
+.list{list-style:none}
+.item{border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.row{display:grid;grid-template-columns:92px 1fr auto auto;gap:12px;align-items:center;padding:12px 16px;cursor:pointer}
+.row:hover{background:#f8fafc}
+.cat{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.3px;padding:4px 8px;border-radius:6px;text-align:center}
+.cat.expert{background:var(--info-l);color:var(--info)}
+.cat.assureur{background:var(--accent-l);color:var(--accent)}
+.cat.client{background:var(--ok-l);color:var(--ok)}
+.cat.fournisseur{background:var(--warn-l);color:var(--warn)}
+.subject{font-weight:600;font-size:14px}
+.meta{font-size:12.5px;color:var(--muted);margin-top:1px}
+.badge{font-size:12px;font-weight:600;padding:4px 10px;border-radius:14px;white-space:nowrap}
+.s-nouveau{background:var(--info-l);color:var(--info)}
+.s-brouillon{background:var(--warn-l);color:var(--warn)}
+.s-envoye{background:var(--ok-l);color:var(--ok)}
+.s-relance{background:var(--bad-l);color:var(--bad)}
+.s-classe{background:#eceff3;color:#4a5663}
+.time{font-size:12px;color:var(--muted);white-space:nowrap}
+.detail{display:none;padding:2px 16px 16px 16px;background:#f8fafc}
+.item.open .detail{display:block}
+.item.open .row{background:#f8fafc}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.box{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px 14px}
+.box h4{font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted);margin-bottom:8px}
+.box p{font-size:13.5px;white-space:pre-line}
+.extract{display:grid;grid-template-columns:auto 1fr;gap:4px 12px;font-size:13px}
+.extract dt{color:var(--muted)}
+.extract dd{font-weight:600}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.new{animation:slideIn .7s ease-out}
+@keyframes slideIn{0%{opacity:0;transform:translateY(-18px);background:#d6e8fa}100%{opacity:1;transform:none;background:transparent}}
+.empty{padding:30px;text-align:center;color:var(--muted);font-size:14px}
+.toast{position:fixed;right:20px;bottom:64px;background:#14233a;color:#fff;padding:11px 16px;border-radius:10px;font-size:13.5px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px;z-index:10}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;padding:14px;font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);background:#fff}
+@media(max-width:720px){
+  .row{grid-template-columns:1fr auto;gap:6px}
+  .row .cat{grid-column:1;justify-self:start}
+  .row .time{display:none}
+  .grid2{grid-template-columns:1fr}
+  .kpi .val{font-size:24px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">
+    <div class="logo">CM</div>
+    <h1>CARROSSERIE MATARESE FRERES<small>Salon-de-Provence · Assistant boîte mail & relances d'experts</small></h1>
+  </div>
+  <div class="mailbox">Boîte surveillée : carrosseriematarese@hotmail.fr</div>
+</header>
+
+<main>
+  <div class="title-row">
+    <div>
+      <h2>Traitement assisté des emails</h2>
+      <p>Tri automatique, brouillons de réponse et relances d'experts. Aucun envoi sans validation humaine.</p>
+    </div>
+    <button class="btn btn-primary" id="btnSim">✉ Simuler un mail entrant</button>
+  </div>
+
+  <section class="kpis" id="kpis"></section>
+
+  <section class="panel">
+    <div class="panel-h">
+      <h3>Historique des emails & relances</h3>
+      <div class="filters" id="filters"></div>
+    </div>
+    <ul class="list" id="list"></ul>
+  </section>
+</main>
+
+<div class="toast" id="toast"></div>
+<footer>Démonstration – données fictives – TRAM IA</footer>
+
+<script type="application/json" id="mock-data">
+{
+ "initial":[
+  {"cat":"expert","subject":"Relance : accord de l'expert pour dossier Peugeot 308","from":"Cabinet Expertise Sud Provence","dossier":"D-2411-078","immat":"GH-412-PL","client":"M. Bernard","action":"Passage de l'expert à confirmer","statut":"relance","time":"08:42","brouillon":"Bonjour,\nNous revenons vers vous concernant le dossier D-2411-078 (Peugeot 308, GH-412-PL). Le devis a été transmis il y a 3 jours. Pouvez-vous nous confirmer votre accord ou la date de passage de l'expert ?\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"assureur","subject":"Sinistre n° 2024-558120 : pièces complémentaires demandées","from":"Assurances Mutuelle du Sud","dossier":"D-2411-081","immat":"FK-927-TR","client":"Mme Rossi","action":"Constat amiable à fournir","statut":"brouillon","time":"08:15","brouillon":"Bonjour,\nVeuillez trouver ci-joint le constat amiable du sinistre 2024-558120. Merci de nous confirmer la prise en charge pour lancer les réparations.\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"client","subject":"Où en est ma voiture ?","from":"M. Garcia","dossier":"D-2411-069","immat":"EZ-305-AB","client":"M. Garcia","action":"Demande de statut réparation","statut":"brouillon","time":"07:58","brouillon":"Bonjour M. Garcia,\nVotre Renault Clio est actuellement en cabine de peinture. Livraison prévue jeudi après contrôle qualité. Nous vous prévenons dès qu'elle est prête.\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"expert","subject":"Photos du choc avant : validation du chiffrage","from":"Expert Moreau","dossier":"D-2411-064","immat":"CC-118-XD","client":"Mme Leroy","action":"Validation du devis Iris","statut":"envoye","time":"Hier 17:30","brouillon":"Bonjour,\nLe chiffrage Iris du dossier D-2411-064 est joint. Merci de valider avant mardi pour commander les pièces.\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"fournisseur","subject":"Facture pièces carrosserie : échéance 30 jours","from":"Distri-Pièces Auto","dossier":"—","immat":"—","client":"Fournisseur","action":"Facture à transmettre en comptabilité","statut":"classe","time":"Hier 15:12","brouillon":"Email classé : facture fournisseur à reporter dans Emeraude. Aucune réponse nécessaire."},
+  {"cat":"client","subject":"Besoin d'un véhicule de prêt pendant les réparations","from":"M. Nicolas","dossier":"D-2411-083","immat":"BT-760-QM","client":"M. Nicolas","action":"Prêt véhicule à réserver","statut":"nouveau","time":"Hier 11:05","brouillon":"Bonjour M. Nicolas,\nNous pouvons vous proposer un véhicule de prêt dès le dépôt de votre voiture. Merci de nous indiquer la date souhaitée.\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"assureur","subject":"Accord de prise en charge : dossier Citroën C3","from":"Assurances Provence Mutuelle","dossier":"D-2411-059","immat":"AW-244-LN","client":"Mme Faure","action":"Accord reçu, lancer la commande","statut":"envoye","time":"Hier 09:48","brouillon":"Bonjour,\nNous accusons réception de l'accord de prise en charge. Les pièces sont commandées, les travaux démarrent lundi.\nCordialement,\nCarrosserie Matarese Frères"}
+ ],
+ "scenarios":[
+  {"cat":"expert","subject":"Relance : l'expert est-il passé sur le dossier Renault Captur ?","from":"Cabinet Expertise Salon","dossier":"D-2411-090","immat":"HJ-503-KS","client":"M. Blanc","action":"Date de passage de l'expert à caler","brouillon":"Bonjour,\nNous revenons vers vous pour caler la date de passage de l'expert sur le dossier D-2411-090 (Renault Captur). Disponibilités atelier : mardi ou mercredi matin.\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"client","subject":"Mon dossier assurance est-il complet ?","from":"Mme Martin","dossier":"D-2411-091","immat":"DN-871-RE","client":"Mme Martin","action":"Contrôle de complétude du dossier","brouillon":"Bonjour Mme Martin,\nIl nous manque la carte grise et l'attestation d'assurance pour finaliser votre dossier. Vous pouvez répondre directement à ce mail avec les pièces jointes.\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"assureur","subject":"Devis à valider : choc latéral Volkswagen Golf","from":"Assurances Mutuelle du Sud","dossier":"D-2411-092","immat":"FP-662-GA","client":"M. Roux","action":"Devis en attente de validation assureur","brouillon":"Bonjour,\nLe devis du dossier D-2411-092 (choc latéral Golf) est joint pour validation. Montant et lignes Iris détaillés. Merci de nous retourner votre accord.\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"fournisseur","subject":"Livraison pare-chocs : retard d'un jour","from":"Distri-Pièces Auto","dossier":"D-2411-088","immat":"KL-390-ZP","client":"Fournisseur","action":"Replanifier le montage atelier","brouillon":"Bonjour,\nBien noté pour le retard de livraison. Pouvez-vous confirmer l'horaire de passage demain ? Nous replanifions le montage en conséquence.\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"client","subject":"Photos de mon choc arrière : devis possible ?","from":"M. Petit","dossier":"D-2411-093","immat":"GG-215-MC","client":"M. Petit","action":"Nouvelle demande de devis","brouillon":"Bonjour M. Petit,\nMerci pour vos photos. Nous préparons un chiffrage et revenons vers vous sous 24 h. Pouvez-vous nous indiquer votre assureur et le numéro de sinistre ?\nCordialement,\nCarrosserie Matarese Frères"},
+  {"cat":"expert","subject":"Rapport d'expertise : dossier Toyota Yaris","from":"Expert Martinez","dossier":"D-2411-094","immat":"BB-947-CT","client":"Mme Dupuis","action":"Rapport reçu, chiffrage à ajuster","brouillon":"Bonjour,\nRapport d'expertise bien reçu pour le dossier D-2411-094. Nous ajustons le chiffrage Iris et vous le renvoyons dans la journée.\nCordialement,\nCarrosserie Matarese Frères"}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var DATA;
+  try{DATA=JSON.parse(document.getElementById('mock-data').textContent);}catch(e){DATA={initial:[],scenarios:[]};}
+  var STATUTS={nouveau:'Nouveau',brouillon:'Brouillon prêt',envoye:'Envoyé',relance:'Relance en retard',classe:'Classé'};
+  var CATS={expert:'Expert',assureur:'Assureur',client:'Client',fournisseur:'Fournisseur'};
+  var state={emails:[],filter:'tous',open:null,sim:0,idSeq:0,minutes:0,auto:0};
+
+  function nowStr(){var d=new Date();return ('0'+d.getHours()).slice(-2)+':'+('0'+d.getMinutes()).slice(-2);}
+
+  DATA.initial.forEach(function(e){state.emails.push(mk(e));});
+  function mk(e){state.idSeq++;var o={};for(var k in e)o[k]=e[k];o.id=state.idSeq;o.isNew=false;return o;}
+
+  var listEl=document.getElementById('list');
+  var filtersEl=document.getElementById('filters');
+  var kpisEl=document.getElementById('kpis');
+  var toastEl=document.getElementById('toast');
+  var toastT;
+
+  function toast(msg){toastEl.textContent=msg;toastEl.className='toast show';clearTimeout(toastT);toastT=setTimeout(function(){toastEl.className='toast';},2600);}
+
+  function renderFilters(){
+    var opts=[['tous','Tous'],['relance','Relances en retard'],['brouillon','Brouillons à valider'],['expert','Experts'],['assureur','Assureurs'],['client','Clients']];
+    filtersEl.innerHTML='';
+    opts.forEach(function(o){
+      var b=document.createElement('button');
+      b.className='chip'+(state.filter===o[0]?' on':'');
+      b.textContent=o[1];
+      b.onclick=function(){state.filter=o[0];renderFilters();renderList();};
+      filtersEl.appendChild(b);
+    });
+  }
+
+  function matches(e){
+    var f=state.filter;
+    if(f==='tous')return true;
+    if(f==='relance'||f==='brouillon')return e.statut===f;
+    return e.cat===f;
+  }
+
+  function renderKpis(){
+    var total=state.emails.length;
+    var retard=state.emails.filter(function(e){return e.statut==='relance';}).length;
+    var aValider=state.emails.filter(function(e){return e.statut==='brouillon'||e.statut==='nouveau';}).length;
+    var traites=state.emails.filter(function(e){return e.statut==='envoye'||e.statut==='classe';}).length;
+    var heures=(4.5+state.minutes/60).toFixed(1).replace('.',',');
+    var pct=Math.min(100,Math.round((2.5+state.minutes/60)/5*100*0.9));
+    var autoPct=Math.round(((total-aValider-retard)/Math.max(total,1))*100);
+    var cards=[
+      {l:'Temps sauvé / semaine',v:heures.replace(',',',')+' h',s:'Objectif : 2,5 h/sem. gagnées (est.)',bar:Math.min(100,Math.round(parseFloat(heures.replace(',','.'))/5*100))},
+      {l:'Emails traités ce jour',v:String(18+state.sim+traites),s:'Sur ~20 emails/jour en moyenne'},
+      {l:'Relances d\'experts en retard',v:String(retard),s:'Cible : 0',alert:retard>0},
+      {l:'Brouillons à valider',v:String(aValider),s:'Validation humaine avant envoi'},
+      {l:'Brouillons envoyés sans retouche',v:Math.min(95,68+state.auto*2)+' %',s:'Cible : 70 %'}
+    ];
+    kpisEl.innerHTML='';
+    cards.forEach(function(c){
+      var d=document.createElement('div');d.className='kpi';
+      d.innerHTML='<div class="lbl">'+c.l+'</div><div class="val"'+(c.alert?' style="color:var(--bad)"':'')+'>'+c.v+'</div><div class="sub">'+c.s+'</div>'+(c.bar!==undefined?'<div class="bar"><i style="width:'+c.bar+'%"></i></div>':'');
+      kpisEl.appendChild(d);
+    });
+  }
+  function bumpKpis(){
+    var k=kpisEl.children;
+    for(var i=0;i<k.length;i++){(function(el){el.classList.add('bump');setTimeout(function(){el.classList.remove('bump');},700);})(k[i]);}
+  }
+
+  function esc(s){return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+  function renderList(){
+    listEl.innerHTML='';
+    var shown=state.emails.filter(matches);
+    if(!shown.length){listEl.innerHTML='<li class="empty">Aucun email pour ce filtre.</li>';return;}
+    shown.forEach(function(e){
+      var li=document.createElement('li');
+      li.className='item'+(state.open===e.id?' open':'')+(e.isNew?' new':'');
+      var actionsHtml='';
+      if(e.statut==='brouillon'||e.statut==='nouveau'||e.statut==='relance'){
+        actionsHtml+='<button class="btn btn-primary btn-sm" data-a="send">Valider et envoyer le brouillon</button>';
+      }
+      if(e.statut==='nouveau'){actionsHtml+='<button class="btn btn-ghost btn-sm" data-a="draft">Générer un brouillon</button>';}
+      if(e.statut!=='classe'&&e.statut!=='envoye'){actionsHtml+='<button class="btn btn-ghost btn-sm" data-a="archive">Classer sans réponse</button>';}
+      if(e.statut==='envoye'||e.statut==='classe'){actionsHtml+='<span class="meta">Dossier reporté dans le suivi des relances.</span>';}
+      li.innerHTML=
+        '<div class="row"><span class="cat '+e.cat+'">'+CATS[e.cat]+'</span>'+
+        '<div><div class="subject">'+esc(e.subject)+'</div><div class="meta">'+esc(e.from)+' · Dossier '+esc(e.dossier)+'</div></div>'+
+        '<span class="badge s-'+e.statut+'">'+STATUTS[e.statut]+'</span><span class="time">'+esc(e.time)+'</span></div>'+
+        '<div class="detail"><div class="grid2">'+
+        '<div class="box"><h4>Informations extraites par l\'IA</h4><dl class="extract">'+
+        '<dt>N° dossier</dt><dd>'+esc(e.dossier)+'</dd><dt>Immatriculation</dt><dd>'+esc(e.immat)+'</dd>'+
+        '<dt>Client</dt><dd>'+esc(e.client)+'</dd><dt>Demande</dt><dd>'+esc(e.action)+'</dd>'+
+        '<dt>Classification</dt><dd>'+CATS[e.cat]+'</dd></dl></div>'+
+        '<div class="box"><h4>Brouillon de réponse (jamais envoyé automatiquement)</h4><p>'+esc(e.brouillon)+'</p></div>'+
+        '</div><div class="actions">'+actionsHtml+'</div></div>';
+      li.querySelector('.row').onclick=function(){state.open=(state.open===e.id?null:e.id);renderList();};
+      var btns=li.querySelectorAll('[data-a]');
+      for(var i=0;i<btns.length;i++){(function(b){b.onclick=function(ev){ev.stopPropagation();act(e,b.getAttribute('data-a'));};})(btns[i]);}
+      listEl.appendChild(li);
+      e.isNew=false;
+    });
+  }
+
+  function act(e,a){
+    if(a==='send'){
+      e.statut='envoye';state.minutes+=6;state.auto++;
+      toast('Réponse validée et envoyée. Relance enregistrée dans le suivi.');
+    }else if(a==='draft'){
+      e.statut='brouillon';state.minutes+=4;
+      toast('Brouillon généré à partir des modèles de réponse.');
+    }else if(a==='archive'){
+      e.statut='classe';state.minutes+=2;
+      toast('Email classé. Aucune action requise.');
+    }
+    renderKpis();bumpKpis();renderList();
+  }
+
+  document.getElementById('btnSim').onclick=function(){
+    var sc=DATA.scenarios;
+    if(!sc||!sc.length)return;
+    var base=sc[state.sim%sc.length];
+    var e=mk(base);
+    e.statut='nouveau';e.time=nowStr();e.isNew=true;
+    state.emails.unshift(e);
+    state.sim++;state.minutes+=5;
+    state.open=e.id;
+    toast('Nouvel email reçu : classé « '+CATS[e.cat]+' », informations extraites, brouillon prêt.');
+    setTimeout(function(){if(e.statut==='nouveau'){e.statut='brouillon';renderKpis();renderList();}},1600);
+    state.filter='tous';
+    renderFilters();renderKpis();bumpKpis();renderList();
+  };
+
+  renderFilters();renderKpis();renderList();
+})();
+</script>
+</body>
+</html>
