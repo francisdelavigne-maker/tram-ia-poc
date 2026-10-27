@@ -1,0 +1,47 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex,nofollow"><title>Démos TRAM IA – CARROSSERIE MATARESE FRERES</title><style>
+:root{--bg:#f3f5f8;--card:#fff;--fg:#1b2733;--muted:#5b6b7b;--line:#dde3ea;--navy:#0f2a43;--accent:#c26a00;--accent-fg:#fff;color-scheme:light}
+@media(prefers-color-scheme:dark){:root{--bg:#0e1a26;--card:#16293b;--fg:#e8eef4;--muted:#9db0c2;--line:#26405a;--navy:#e8eef4;--accent:#f0a04b;--accent-fg:#1a1205;color-scheme:dark}}
+*{box-sizing:border-box}
+body{margin:0;min-height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--fg);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Arial,sans-serif;font-size:15px;line-height:1.5}
+.top{background:var(--card);border-bottom:1px solid var(--line);padding:14px 20px 0}
+.eyebrow{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:700}
+.top h1{font-size:clamp(18px,3vw,24px);line-height:1.2;margin:2px 0 8px;color:var(--navy)}
+nav{display:flex;gap:2px;overflow-x:auto;margin:0 -8px}
+.tab{appearance:none;border:0;background:none;color:var(--muted);font:inherit;font-weight:600;padding:10px 14px;border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap}
+.tab:hover{color:var(--fg)}
+.tab[aria-selected=true]{color:var(--navy);border-bottom-color:var(--accent)}
+main{flex:1;display:flex;flex-direction:column;min-height:0}
+#home{width:100%;max-width:1040px;margin:0 auto;padding:28px 20px 48px}
+.lead{max-width:62ch;color:var(--muted);margin:0 0 22px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,290px),1fr));gap:16px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:20px;display:flex;flex-direction:column;gap:12px;min-width:0}
+.n{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.card h2{font-size:19px;line-height:1.25;margin:0;color:var(--navy)}
+.card p{margin:0}
+.card ul{margin:0;padding-left:18px;color:var(--muted);font-size:14px;display:grid;gap:4px}
+.gain{font-size:13px;color:var(--muted);border-top:1px solid var(--line);padding-top:10px;margin-top:auto}
+.open{appearance:none;border:0;font:inherit;text-align:center;background:var(--accent);color:var(--accent-fg);font-weight:700;padding:11px 16px;border-radius:8px;cursor:pointer}
+.open:hover{filter:brightness(.92)}
+.note{margin-top:24px;font-size:13px;color:var(--muted);max-width:70ch}
+#demo{flex:1;display:none;flex-direction:column}
+#bar{display:flex;justify-content:space-between;gap:12px;padding:8px 20px;font-size:13px;color:var(--muted);border-bottom:1px solid var(--line);background:var(--card)}
+#bar a{color:var(--accent);font-weight:600;text-decoration:none}
+#fr{flex:1;width:100%;min-height:72vh;border:0;background:#fff}
+</style></head><body>
+<header class="top"><div class="eyebrow">Démonstrations</div><h1>Assistant CARROSSERIE MATARESE FRERES : démos</h1>
+<nav role="tablist" aria-label="Démos"><button role="tab" class="tab" data-i="0">Vue d'ensemble</button><button role="tab" class="tab" data-i="1">Démo 1 · Gestion des emails · Assistant boîte mail et relances d'experts</button><button role="tab" class="tab" data-i="2">Démo 2 · Onboarding client assurance · Onboarding client et assurance</button><button role="tab" class="tab" data-i="3">Démo 3 · Devis à encaissement · Pilotage devis, facturation et encaissements</button></nav></header>
+<main>
+<section id="home"><p class="lead">Trois maquettes interactives réunies dans un seul espace pour voir comment l'assistant allège le quotidien de CARROSSERIE MATARESE FRERES. Cliquez, essayez, tout fonctionne sans connexion.</p>
+<div class="grid"><article class="card"><div class="n">Démo 1 · Gestion des emails</div><h2>Assistant boîte mail et relances d'experts</h2><p>Tri des emails clients, experts et assureurs, extraction du numéro de dossier et brouillons de réponse validés par l'humain, avec suivi des relances d'experts.</p><ul><li>Classification automatique des emails entrants</li><li>Brouillons de réponse et relances d'experts à valider</li></ul><div class="gain">2,5 h sauvées par semaine (estimation)</div><button class="open" data-go="1">Ouvrir la démo</button></article><article class="card"><div class="n">Démo 2 · Onboarding client assurance</div><h2>Onboarding client et assurance</h2><p>Création automatisée du dossier de prise en charge : collecte des pièces, contrôle de complétude, relance client, création dans Alpha 2C et véhicule de prêt.</p><ul><li>Contrôle de complétude du dossier assurance et relance des pièces manquantes</li><li>Vérification humaine puis création du dossier dans Alpha 2C</li></ul><div class="gain">3 h sauvées par semaine sur la collecte et la saisie des dossiers (estimation)</div><button class="open" data-go="2">Ouvrir la démo</button></article><article class="card"><div class="n">Démo 3 · Devis à encaissement</div><h2>Pilotage devis, facturation et encaissements</h2><p>Suivez chaque dossier du devis Iris à l'encaissement : relances d'experts, facture pré-remplie, rapprochement des paiements assureurs et impayés.</p><ul><li>Facture pré-remplie depuis le devis accepté</li><li>Relances d'experts et de paiement préparées</li><li>Rapprochement automatique des encaissements</li></ul><div class="gain">5,6 h sauvées par semaine sur la chaîne devis-facturation-encaissements (estimation)</div><button class="open" data-go="3">Ouvrir la démo</button></article></div>
+<p class="note">Démonstration : toutes les données sont fictives et rien n'est envoyé. Les gains annoncés sont des estimations à valider avec chaque entreprise. TRAM IA.</p></section>
+<section id="demo"><div id="bar"><span>Démo interactive, données fictives</span><a id="ext" href="#" target="_blank" rel="noopener">Ouvrir dans un onglet</a></div><iframe id="fr" title="Démo interactive"></iframe></section>
+</main>
+<script>
+(function(){var N=3;var tabs=[].slice.call(document.querySelectorAll('.tab'));var home=document.getElementById('home'),demo=document.getElementById('demo'),fr=document.getElementById('fr'),ext=document.getElementById('ext');
+function show(k){if(k>=1&&k<=N){home.style.display='none';demo.style.display='flex';var u='poc-'+k+'.html';if(fr.getAttribute('src')!==u)fr.setAttribute('src',u);ext.setAttribute('href',u);}else{k=0;home.style.display='';demo.style.display='none';}
+tabs.forEach(function(t){t.setAttribute('aria-selected',String(+t.getAttribute('data-i')===k));});
+try{history.replaceState(null,'',k?'#poc-'+k:location.pathname)}catch(e){}window.scrollTo(0,0);}
+tabs.forEach(function(t){t.addEventListener('click',function(){show(+t.getAttribute('data-i'));});});
+[].forEach.call(document.querySelectorAll('[data-go]'),function(b){b.addEventListener('click',function(){show(+b.getAttribute('data-go'));});});
+var m=location.hash.match(/poc-(\d)/);show(m?+m[1]:0);})();
+</script></body></html>
