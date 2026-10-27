@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Chaîne devis, facturation et encaissements – Carrosserie Matarese Frères</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1c2733;--mut:#6b7785;--line:#dde3ea;--acc:#0f4c81;--acc2:#e8f0f8;--ok:#1e8e4f;--okb:#e3f5ea;--warn:#b86e00;--warnb:#fff1d6;--bad:#c0392b;--badb:#fde8e5;--info:#1a6fb5;--infob:#e1eefb}
+*{box-sizing:border-box}
+body{margin:0;font-family:"Segoe UI",Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+header{background:var(--acc);color:#fff;padding:16px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+header h1{margin:0;font-size:20px;letter-spacing:.3px}
+header .sub{font-size:13px;opacity:.85;margin-top:2px}
+.badge{background:rgba(255,255,255,.18);border-radius:20px;padding:5px 14px;font-size:12px}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;border-top:4px solid var(--acc);transition:transform .3s}
+.kpi .lbl{font-size:12px;color:var(--mut);text-transform:uppercase;letter-spacing:.5px}
+.kpi .val{font-size:28px;font-weight:700;margin:6px 0 2px;color:var(--acc)}
+.kpi .note{font-size:12px;color:var(--mut)}
+.kpi.bump{transform:translateY(-4px)}
+.bar{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.bar h2{margin:0;font-size:18px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink);border-radius:20px;padding:6px 13px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.demo{background:var(--card);border:2px dashed var(--acc);border-radius:10px;padding:14px 16px;margin-bottom:16px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px}
+.demo p{margin:0;color:var(--mut);font-size:13px;max-width:620px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:11px 20px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(15,76,129,.3)}
+.btn:hover{background:#0b3a64}
+.btn.sm{padding:7px 13px;font-size:13px;font-weight:500;box-shadow:none}
+.btn.ghost{background:#fff;color:var(--acc);border:1px solid var(--acc)}
+.btn.ghost:hover{background:var(--acc2)}
+.list{display:flex;flex-direction:column;gap:10px}
+.fiche{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fiche.new{animation:pop .7s ease;border-color:var(--acc);box-shadow:0 0 0 3px var(--acc2)}
+@keyframes pop{0%{opacity:0;transform:translateY(-18px) scale(.97)}100%{opacity:1;transform:none}}
+.head{display:grid;grid-template-columns:90px 1.6fr 1.3fr 110px 130px 24px;gap:10px;align-items:center;padding:12px 16px;cursor:pointer}
+.head:hover{background:#fafbfd}
+.ref{font-weight:700;color:var(--acc);font-size:13px}
+.veh small,.cli small{display:block;color:var(--mut);font-size:12px}
+.amt{font-weight:600;text-align:right}
+.st{display:inline-block;padding:4px 10px;border-radius:14px;font-size:12px;font-weight:600;text-align:center}
+.st.ok{background:var(--okb);color:var(--ok)}
+.st.warn{background:var(--warnb);color:var(--warn)}
+.st.bad{background:var(--badb);color:var(--bad)}
+.st.info{background:var(--infob);color:var(--info)}
+.arrow{transition:transform .2s;color:var(--mut);text-align:center}
+.fiche.open .arrow{transform:rotate(90deg)}
+.body{display:none;border-top:1px solid var(--line);padding:14px 16px;background:#fafbfd}
+.fiche.open .body{display:block}
+.steps{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:12px}
+.step{font-size:12px;padding:5px 10px;border-radius:6px;background:#e9edf2;color:var(--mut)}
+.step.done{background:var(--okb);color:var(--ok)}
+.step.cur{background:var(--acc);color:#fff;font-weight:600}
+.cols{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-bottom:12px}
+.cols h4{margin:0 0 4px;font-size:12px;text-transform:uppercase;color:var(--mut);letter-spacing:.4px}
+.cols div{font-size:14px}
+.act{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.act select{padding:7px 10px;border:1px solid var(--line);border-radius:6px;font-size:13px;background:#fff}
+.empty{text-align:center;color:var(--mut);padding:30px;background:#fff;border:1px solid var(--line);border-radius:10px}
+.toast{position:fixed;right:18px;bottom:18px;background:var(--ink);color:#fff;padding:11px 16px;border-radius:8px;font-size:14px;opacity:0;transform:translateY(12px);transition:.3s;pointer-events:none;max-width:320px;z-index:9}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;color:var(--mut);font-size:12px;padding:18px;border-top:1px solid var(--line);background:#fff}
+@media(max-width:820px){
+.head{grid-template-columns:1fr 1fr;gap:6px}
+.amt{text-align:left}
+.arrow{display:none}
+header h1{font-size:17px}
+}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>CARROSSERIE MATARESE FRERES</h1>
+    <div class="sub">Pilotage des dossiers : du devis à l'encaissement · Salon-de-Provence</div>
+  </div>
+  <div class="badge">Priorité 3 · Chaîne devis – facturation – encaissements</div>
+</header>
+<main>
+  <section class="kpis" id="kpis"></section>
+
+  <div class="demo">
+    <div>
+      <strong>Déclencheur de démo</strong>
+      <p>Simulez l'arrivée d'une réponse d'expert ou d'un paiement : la fiche se crée seule, la facture est pré-remplie et les indicateurs se mettent à jour.</p>
+    </div>
+    <button class="btn" id="btnSim">⚡ Simuler une réponse d'expert / un paiement reçu</button>
+  </div>
+
+  <div class="bar">
+    <h2>Historique des dossiers</h2>
+    <div class="filters" id="filters"></div>
+  </div>
+  <div class="list" id="list"></div>
+</main>
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "etapes":["Dossier ouvert","Devis envoyé","Accord expert","Réparation","Facture","Encaissé"],
+ "statuts":{
+  "attente_expert":{"l":"Devis en attente expert","c":"warn","e":1},
+  "accord":{"l":"Accord reçu","c":"info","e":2},
+  "reparation":{"l":"En réparation","c":"info","e":3},
+  "a_facturer":{"l":"Facture à valider","c":"warn","e":4},
+  "facture":{"l":"Facture envoyée","c":"info","e":4},
+  "retard":{"l":"Paiement en retard","c":"bad","e":4},
+  "encaisse":{"l":"Encaissé","c":"ok","e":5}
+ },
+ "dossiers":[
+  {"ref":"D-2611-041","client":"M. Jean-Luc Ferrand","veh":"Renault Clio V · EG-512-KP","assur":"MAIF","expert":"Cabinet Expertis","montant":2840,"statut":"attente_expert","note":"Choc avant gauche. Devis Iris transmis à l'expert il y a 3 jours : relance prête (brouillon)."},
+  {"ref":"D-2611-038","client":"Mme Karine Roux","veh":"Peugeot 308 · FT-208-MZ","assur":"AXA","expert":"Cabinet Duval","montant":1960,"statut":"reparation","note":"Accord reçu, pièces commandées, passage de l'expert effectué. Fin des travaux prévue jeudi."},
+  {"ref":"D-2611-035","client":"SARL Transports Giraud","veh":"Renault Master · FB-740-RC","assur":"Groupama","expert":"Cabinet Expertis","montant":5320,"statut":"a_facturer","note":"Travaux terminés, contrôle qualité validé. Facture pré-remplie à partir du devis : écart de 0 € détecté."},
+  {"ref":"D-2610-029","client":"M. Pascal Moretti","veh":"Citroën C3 · DK-319-ST","assur":"Matmut","expert":"Cabinet Duval","montant":1410,"statut":"retard","note":"Facture envoyée il y a 32 jours. Relance de paiement n°2 prête, délai de 30 jours dépassé."},
+  {"ref":"D-2610-027","client":"Mme Élodie Martin","veh":"Toyota Yaris · GH-087-LA","assur":"MMA","expert":"Cabinet Marcelli","montant":3175,"statut":"encaisse","note":"Paiement de l'assureur rapproché automatiquement. Dossier clos et reporté dans Emeraude."},
+  {"ref":"D-2610-024","client":"M. Thierry Blanc","veh":"Dacia Duster · FZ-455-QD","assur":"Allianz","expert":"Cabinet Marcelli","montant":2280,"statut":"accord","note":"Accord expert reçu ce matin : commande créée, planification atelier notifiée."},
+  {"ref":"D-2610-021","client":"M. Samir Haddad","veh":"VW Golf 7 · EA-266-PN","assur":"Direct Assurance","expert":"Cabinet Duval","montant":4090,"statut":"facture","note":"Facture envoyée à l'assureur, échéance à 15 jours. Suivi automatique actif."}
+ ],
+ "scenarios":[
+  {"type":"expert","client":"M. Gilles Bertrand","veh":"Ford Fiesta · GC-120-WB","assur":"MAAF","expert":"Cabinet Duval","montant":1850,"statut":"accord","note":"Mail entrant du Cabinet Duval : accord sur le devis. Commande créée et atelier prévenu."},
+  {"type":"paiement","client":"Mme Nadia Lopez","veh":"Opel Corsa · FD-903-HE","assur":"AXA","expert":"Cabinet Expertis","montant":2640,"statut":"encaisse","note":"Virement AXA reçu et rapproché de la facture. Dossier clos, écriture envoyée à Emeraude."},
+  {"type":"facture","client":"M. Olivier Chabert","veh":"Audi A3 · GT-671-KS","assur":"Generali","expert":"Cabinet Marcelli","montant":6120,"statut":"a_facturer","note":"Fin des travaux validée : facture pré-remplie depuis le devis accepté, en attente de votre validation."},
+  {"type":"expert","client":"SAS Provence Frais","veh":"Peugeot Partner · FK-218-DX","assur":"Groupama","expert":"Cabinet Expertis","montant":3490,"statut":"accord","note":"L'expert valide le devis avec une minoration de 120 € : écart signalé avant commande."},
+  {"type":"paiement","client":"M. Lucas Fabre","veh":"Mini Cooper · EF-044-VR","assur":"Matmut","expert":"Cabinet Marcelli","montant":2205,"statut":"encaisse","note":"Paiement reçu après relance automatique n°1. Rapprochement effectué."}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var D = JSON.parse(document.getElementById('mock-data').textContent);
+  var state = {
+    dossiers: D.dossiers.map(function(d){return Object.assign({},d,{open:false,isNew:false});}),
+    filtre:'tous',
+    idx:0,
+    sim:0,
+    gainH:5.6,
+    relances:2,
+    compteur:46
+  };
+
+  function fmt(n){return n.toLocaleString('fr-FR')+' €';}
+  function toast(msg){
+    var t=document.getElementById('toast');
+    t.textContent=msg;t.classList.add('show');
+    clearTimeout(toast._t);
+    toast._t=setTimeout(function(){t.classList.remove('show');},2800);
+  }
+
+  function renderKpis(){
+    var enc=0,att=0,retard=0;
+    state.dossiers.forEach(function(d){
+      if(d.statut==='encaisse')enc+=d.montant;
+      else if(d.statut==='retard')retard+=d.montant;
+      else if(d.statut==='facture'||d.statut==='a_facturer')att+=d.montant;
+    });
+    var dossiersEnCours=state.dossiers.filter(function(d){return d.statut!=='encaisse';}).length;
+    var k=[
+      {l:'Temps administratif sauvé',v:state.gainH.toFixed(1).replace('.',',')+' h',n:'par semaine (estimation)'},
+      {l:'Encaissé ce mois',v:fmt(enc+18450),n:'rapprochement automatique'},
+      {l:'Factures en attente',v:fmt(att),n:'à valider ou en cours de paiement'},
+      {l:'Impayés à relancer',v:fmt(retard),n:state.relances+' relances préparées'},
+      {l:'Dossiers en cours',v:String(dossiersEnCours),n:'dont 0 relance d\'expert en retard'},
+      {l:'Délai moyen d\'encaissement',v:Math.max(21,34-state.sim)+' j',n:'objectif : réduction de 50 % du temps de suivi'}
+    ];
+    var el=document.getElementById('kpis');
+    el.innerHTML=k.map(function(x){
+      return '<div class="kpi"><div class="lbl">'+x.l+'</div><div class="val">'+x.v+'</div><div class="note">'+x.n+'</div></div>';
+    }).join('');
+  }
+  function bumpKpis(){
+    var els=document.querySelectorAll('.kpi');
+    els.forEach(function(e){e.classList.add('bump');setTimeout(function(){e.classList.remove('bump');},400);});
+  }
+
+  function renderFilters(){
+    var f=[{k:'tous',l:'Tous'},{k:'attente',l:'En attente expert'},{k:'cours',l:'En réparation'},{k:'facturer',l:'À facturer'},{k:'paiement',l:'Paiements'}];
+    document.getElementById('filters').innerHTML=f.map(function(x){
+      return '<button class="chip'+(state.filtre===x.k?' on':'')+'" data-f="'+x.k+'">'+x.l+'</button>';
+    }).join('');
+    document.querySelectorAll('.chip').forEach(function(b){
+      b.onclick=function(){state.filtre=b.getAttribute('data-f');renderFilters();renderList();};
+    });
+  }
+
+  function match(d){
+    var s=d.statut,f=state.filtre;
+    if(f==='tous')return true;
+    if(f==='attente')return s==='attente_expert'||s==='accord';
+    if(f==='cours')return s==='reparation';
+    if(f==='facturer')return s==='a_facturer';
+    if(f==='paiement')return s==='facture'||s==='retard'||s==='encaisse';
+    return true;
+  }
+
+  function renderList(){
+    var el=document.getElementById('list');
+    var arr=state.dossiers.filter(match);
+    if(!arr.length){el.innerHTML='<div class="empty">Aucun dossier dans cette catégorie.</div>';return;}
+    el.innerHTML=arr.map(function(d){
+      var s=D.statuts[d.statut];
+      var steps=D.etapes.map(function(e,i){
+        var c=i<s.e?'done':(i===s.e?'cur':'');
+        if(d.statut==='encaisse')c='done';
+        return '<span class="step '+c+'">'+e+'</span>';
+      }).join('');
+      var opts=Object.keys(D.statuts).map(function(k){
+        return '<option value="'+k+'"'+(k===d.statut?' selected':'')+'>'+D.statuts[k].l+'</option>';
+      }).join('');
+      return '<div class="fiche'+(d.open?' open':'')+(d.isNew?' new':'')+'" data-ref="'+d.ref+'">'+
+        '<div class="head" data-toggle="'+d.ref+'">'+
+          '<div class="ref">'+d.ref+'</div>'+
+          '<div class="cli">'+d.client+'<small>'+d.veh+'</small></div>'+
+          '<div class="veh">'+d.assur+'<small>Expert : '+d.expert+'</small></div>'+
+          '<div class="amt">'+fmt(d.montant)+'</div>'+
+          '<div><span class="st '+s.c+'">'+s.l+'</span></div>'+
+          '<div class="arrow">▶</div>'+
+        '</div>'+
+        '<div class="body">'+
+          '<div class="steps">'+steps+'</div>'+
+          '<div class="cols">'+
+            '<div><h4>Dossier assurance</h4><div>'+d.assur+' · '+d.expert+'</div></div>'+
+            '<div><h4>Montant du devis (Iris)</h4><div>'+fmt(d.montant)+' TTC</div></div>'+
+            '<div><h4>Dernier événement</h4><div>'+d.note+'</div></div>'+
+          '</div>'+
+          '<div class="act">'+
+            '<label>Statut : <select data-st="'+d.ref+'">'+opts+'</select></label>'+
+            '<button class="btn sm ghost" data-rel="'+d.ref+'">Préparer la relance</button>'+
+            '<button class="btn sm" data-emeraude="'+d.ref+'">Reporter dans Emeraude</button>'+
+          '</div>'+
+        '</div>'+
+      '</div>';
+    }).join('');
+
+    el.querySelectorAll('[data-toggle]').forEach(function(h){
+      h.onclick=function(){
+        var r=h.getAttribute('data-toggle');
+        state.dossiers.forEach(function(d){if(d.ref===r){d.open=!d.open;d.isNew=false;}});
+        renderList();
+      };
+    });
+    el.querySelectorAll('select[data-st]').forEach(function(s){
+      s.onclick=function(e){e.stopPropagation();};
+      s.onchange=function(){
+        var r=s.getAttribute('data-st');
+        state.dossiers.forEach(function(d){if(d.ref===r){d.statut=s.value;d.isNew=false;}});
+        toast('Statut du dossier '+r+' mis à jour.');
+        renderKpis();renderList();
+      };
+    });
+    el.querySelectorAll('[data-rel]').forEach(function(b){
+      b.onclick=function(){toast('Brouillon de relance créé pour '+b.getAttribute('data-rel')+' (non envoyé).');};
+    });
+    el.querySelectorAll('[data-emeraude]').forEach(function(b){
+      b.onclick=function(){toast('Écriture comptable simulée pour '+b.getAttribute('data-emeraude')+'.');};
+    });
+  }
+
+  document.getElementById('btnSim').onclick=function(){
+    var sc=D.scenarios[state.idx % D.scenarios.length];
+    state.idx++;state.sim++;
+    state.compteur++;
+    state.dossiers.forEach(function(d){d.isNew=false;});
+    var nd={
+      ref:'D-2611-0'+state.compteur,
+      client:sc.client,veh:sc.veh,assur:sc.assur,expert:sc.expert,
+      montant:sc.montant,statut:sc.statut,note:sc.note,
+      open:true,isNew:true
+    };
+    state.dossiers.unshift(nd);
+    state.gainH=Math.min(9.8,+(state.gainH+0.3).toFixed(1));
+    if(sc.type==='paiement'&&state.relances>0)state.relances--;
+    if(sc.type==='facture')state.relances++;
+    state.filtre='tous';
+    renderFilters();renderKpis();renderList();bumpKpis();
+    var msg={expert:'Réponse d\'expert traitée : commande créée automatiquement.',paiement:'Paiement rapproché automatiquement de la facture.',facture:'Facture pré-remplie, prête à valider.'};
+    toast(msg[sc.type]||'Nouvelle fiche créée.');
+    window.scrollTo({top:document.querySelector('.bar').offsetTop-10,behavior:'smooth'});
+  };
+
+  renderKpis();renderFilters();renderList();
+})();
+</script>
+</body>
+</html>
