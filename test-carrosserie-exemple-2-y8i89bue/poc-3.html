@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tri et rattachement des emails sinistres – TEST Carrosserie Exemple 2</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1c2733;--mute:#6b7787;--line:#e1e6ed;--accent:#1f5fbf;--accent-d:#164a96;--ok:#1f8a4c;--warn:#c27a00;--ko:#c0392b;--info:#5b6b80}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:#14233a;color:#fff;padding:16px 24px;display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+header h1{margin:0;font-size:20px;font-weight:650}
+header .sub{font-size:13px;color:#b8c6dc;margin-top:2px}
+.badge-demo{background:var(--accent);color:#fff;font-size:12px;padding:4px 10px;border-radius:20px;font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--accent)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--accent-d);transition:transform .25s,color .25s}
+.kpi .v.bump{transform:scale(1.12);color:var(--ok)}
+.kpi .l{font-size:12.5px;color:var(--mute);margin-top:2px}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.btn{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:11px 18px;font-size:15px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(31,95,191,.3);transition:background .15s,transform .1s}
+.btn:hover{background:var(--accent-d)}
+.btn:active{transform:scale(.97)}
+.btn.sec{background:#fff;color:var(--accent-d);border:1px solid var(--accent);box-shadow:none;padding:6px 12px;font-size:13px}
+.btn.sec:hover{background:#eef4fd}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:5px 12px;font-size:13px;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+h2{font-size:16px;margin:18px 0 10px}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.item.new{animation:slide .6s ease-out;box-shadow:0 0 0 2px var(--accent)}
+@keyframes slide{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:11px 14px;cursor:pointer}
+.row:hover{background:#f8fafc}
+.cat{font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:5px;background:#e8eef7;color:var(--accent-d);white-space:nowrap}
+.subject{flex:1;min-width:200px;font-weight:600;font-size:14.5px}
+.meta{font-size:12.5px;color:var(--mute)}
+.st{font-size:12px;font-weight:700;padding:3px 10px;border-radius:20px;color:#fff;white-space:nowrap}
+.st.ok{background:var(--ok)}.st.warn{background:var(--warn)}.st.ko{background:var(--ko)}.st.info{background:var(--info)}
+.detail{display:none;padding:12px 16px 14px;border-top:1px solid var(--line);background:#fafbfd;font-size:13.5px}
+.item.open .detail{display:block}
+.detail .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:8px 16px;margin-bottom:10px}
+.detail b{color:var(--mute);font-weight:600;font-size:12px;display:block}
+.excerpt{background:#fff;border-left:3px solid var(--line);padding:8px 12px;margin:8px 0;color:#37424f;font-style:italic}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.empty{padding:24px;text-align:center;color:var(--mute);background:#fff;border:1px dashed var(--line);border-radius:10px}
+.toast{position:fixed;bottom:56px;right:18px;background:#14233a;color:#fff;padding:10px 16px;border-radius:8px;font-size:13.5px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;font-size:12.5px;color:var(--mute);padding:14px;border-top:1px solid var(--line);background:#fff}
+@media(max-width:600px){header h1{font-size:17px}.kpi .v{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>TEST Carrosserie Exemple 2</h1>
+    <div class="sub">Salon-de-Provence · Tri et rattachement des emails sinistres</div>
+  </div>
+  <span class="badge-demo">Boîte Gmail sinistres · Assistant de tri</span>
+</header>
+
+<main>
+  <section class="kpis" aria-label="Indicateurs">
+    <div class="kpi"><div class="v" id="k-temps">1,5 h</div><div class="l">de tri économisées par semaine</div></div>
+    <div class="kpi"><div class="v" id="k-trait">0</div><div class="l">emails sinistres traités aujourd'hui</div></div>
+    <div class="kpi"><div class="v" id="k-taux">0 %</div><div class="l">rattachés automatiquement à un dossier</div></div>
+    <div class="kpi"><div class="v" id="k-rev">0</div><div class="l">à relire par Marie</div></div>
+    <div class="kpi"><div class="v" id="k-maj">0</div><div class="l">statuts mis à jour dans le suivi Excel</div></div>
+  </section>
+
+  <div class="toolbar">
+    <button class="btn" id="btn-sim">✉ Simuler un email sinistre entrant</button>
+    <div class="filters" id="filters"></div>
+  </div>
+
+  <h2>Historique des emails reçus <span class="meta" id="count"></span></h2>
+  <div class="list" id="list"></div>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "historique":[
+  {"id":1,"heure":"08:12","cat":"Expert","exp":"Cabinet Expertis Sud","sujet":"Rapport d'expertise – choc arrière – Clio blanche","dossier":"S-2026-0412","immat":"FG-482-KP","statut":"ok","statutLib":"Rattaché","extrait":"Veuillez trouver ci-joint le rapport d'expertise après passage de l'expert. Accord sous réserve de la pièce complémentaire.","action":"Rattaché au dossier, statut passé à « Expertise reçue » dans le suivi."},
+  {"id":2,"heure":"08:31","cat":"Assureur","exp":"MAIF – Gestion sinistres","sujet":"Accord de prise en charge – dossier assurance","dossier":"S-2026-0398","immat":"CD-117-ZR","statut":"ok","statutLib":"Rattaché","extrait":"Nous confirmons la prise en charge du sinistre. Franchise de 300 € à la charge de l'assuré.","action":"Rattaché au dossier, statut « Accord assureur » mis à jour."},
+  {"id":3,"heure":"09:05","cat":"Client","exp":"M. Garcia","sujet":"Où en est ma voiture ?","dossier":"S-2026-0405","immat":"AB-903-LM","statut":"warn","statutLib":"À relire","extrait":"Bonjour, ma voiture est chez vous depuis 8 jours, pouvez-vous me dire où en est la réparation ?","action":"Rattaché au dossier. Orienté vers Marie pour réponse client."},
+  {"id":4,"heure":"09:40","cat":"Expert","exp":"Cabinet Expertis Sud","sujet":"Devis complémentaire – pièces carrosserie","dossier":"S-2026-0409","immat":"HJ-226-TV","statut":"info","statutLib":"Orienté chef d'atelier","extrait":"Suite au démontage, un supplément de 420 € HT est demandé pour deux pièces non prévues.","action":"Rattaché au dossier. Orienté vers le chef d'atelier pour avis technique."},
+  {"id":5,"heure":"10:15","cat":"Fournisseur","exp":"AutoPièces Provence","sujet":"Facture n° 88214 – pare-chocs avant","dossier":"S-2026-0401","immat":"KL-640-BN","statut":"ok","statutLib":"Rattaché","extrait":"Facture jointe pour la livraison du 12/06. Règlement à 30 jours.","action":"Rattaché au dossier, facture fournisseur marquée à comptabiliser."},
+  {"id":6,"heure":"10:52","cat":"Client","exp":"Mme Roux","sujet":"Photos du choc et constat amiable","dossier":"","immat":"","statut":"ko","statutLib":"Dossier introuvable","extrait":"Je vous envoie les photos de mon accident d'hier. Je souhaite un rendez-vous pour un devis.","action":"Aucun dossier ouvert : à qualifier par Marie (création de dossier à valider)."},
+  {"id":7,"heure":"11:20","cat":"Assureur","exp":"AXA – Réseau agréé","sujet":"Relance : photos avant réparation manquantes","dossier":"S-2026-0387","immat":"MP-358-QS","statut":"warn","statutLib":"Urgent – à relire","extrait":"Sans les photos avant réparation sous 48 h, le dossier sera suspendu.","action":"Marqué urgent, orienté vers Marie."}
+ ],
+ "scenarios":[
+  {"cat":"Expert","exp":"Cabinet Expertis Sud","sujet":"Rapport d'expertise – choc latéral – 308 grise","dossier":"S-2026-0418","immat":"RT-771-DE","statut":"ok","statutLib":"Rattaché","extrait":"Après passage de l'expert ce matin, le rapport est joint. Réparation validée selon chiffrage.","action":"Rattaché au dossier, statut « Expertise reçue »."},
+  {"cat":"Assureur","exp":"Groupama – Sinistres auto","sujet":"Accord de prise en charge – pare-brise et aile","dossier":"S-2026-0420","immat":"UV-205-HG","statut":"ok","statutLib":"Rattaché","extrait":"Nous confirmons la prise en charge du dossier assurance. Véhicule de remplacement accordé 5 jours.","action":"Rattaché au dossier, prêt véhicule noté dans le suivi."},
+  {"cat":"Client","exp":"M. Lambert","sujet":"L'expert est-il passé sur ma voiture ?","dossier":"S-2026-0411","immat":"WX-912-JK","statut":"warn","statutLib":"À relire","extrait":"Bonjour, l'expert devait passer cette semaine, est-ce fait ? Je dois organiser mes déplacements.","action":"Rattaché au dossier, orienté vers Marie pour réponse."},
+  {"cat":"Expert","exp":"Cabinet Expertis Sud","sujet":"Devis rectifié – écart sur la main-d'œuvre peinture","dossier":"S-2026-0415","immat":"BN-449-CF","statut":"info","statutLib":"Orienté chef d'atelier","extrait":"Le taux horaire peinture retenu est révisé à la baisse. Merci de confirmer votre accord.","action":"Rattaché au dossier, orienté vers le chef d'atelier."},
+  {"cat":"Client","exp":"Mme Fabre","sujet":"Nouveau choc – demande de rendez-vous","dossier":"","immat":"","statut":"ko","statutLib":"Dossier introuvable","extrait":"Mon véhicule a été heurté sur un parking. Pouvez-vous me recevoir pour un devis ?","action":"Aucun dossier correspondant : à qualifier par Marie."},
+  {"cat":"Fournisseur","exp":"Peinture Pro Méditerranée","sujet":"Facture n° 5521 – peinture et vernis","dossier":"S-2026-0408","immat":"DE-833-MN","statut":"ok","statutLib":"Rattaché","extrait":"Veuillez trouver la facture du mois, échéance à 45 jours.","action":"Rattaché au dossier, facture à comptabiliser."},
+  {"cat":"Assureur","exp":"Allianz – Gestion sinistres","sujet":"Pièce manquante : carte grise du véhicule","dossier":"S-2026-0392","immat":"PQ-066-AZ","statut":"warn","statutLib":"Urgent – à relire","extrait":"Dossier incomplet : merci de transmettre la carte grise pour déclencher l'indemnisation.","action":"Marqué urgent, orienté vers Marie."}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var data = JSON.parse(document.getElementById('mock-data').textContent);
+  var items = data.historique.slice();
+  var scen = data.scenarios;
+  var idx = 0, nextId = 100, filtre = 'Tous';
+  var heureSim = [11,48];
+  var stats = {trait:items.length,maj:0,rev:0,rat:0};
+  var cats = ['Tous','Client','Expert','Assureur','Fournisseur','À relire'];
+
+  function pad(n){return (n<10?'0':'')+n;}
+  function recalc(){
+    var rat=0,rev=0,maj=0;
+    items.forEach(function(it){
+      if(it.dossier) rat++;
+      if(it.statut==='warn'||it.statut==='ko') rev++;
+      if(it.statut==='ok'||it.statut==='info') maj++;
+    });
+    stats.trait=items.length; stats.rat=rat; stats.rev=rev; stats.maj=maj;
+  }
+  function setKpi(id,txt){
+    var el=document.getElementById(id);
+    if(el.textContent!==txt){el.textContent=txt;el.classList.add('bump');setTimeout(function(){el.classList.remove('bump');},350);}
+  }
+  function renderKpis(){
+    recalc();
+    setKpi('k-trait',String(stats.trait));
+    setKpi('k-taux',(stats.trait?Math.round(stats.rat/stats.trait*100):0)+' %');
+    setKpi('k-rev',String(stats.rev));
+    setKpi('k-maj',String(stats.maj));
+    var h=1.5+Math.max(0,stats.trait-7)*0.05;
+    setKpi('k-temps',(Math.round(h*10)/10).toString().replace('.',',')+' h');
+  }
+  function renderFilters(){
+    var box=document.getElementById('filters');
+    box.innerHTML='';
+    cats.forEach(function(c){
+      var b=document.createElement('button');
+      b.className='chip'+(c===filtre?' on':'');
+      b.textContent=c;
+      b.onclick=function(){filtre=c;renderFilters();renderList();};
+      box.appendChild(b);
+    });
+  }
+  function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];});}
+  function visible(it){
+    if(filtre==='Tous') return true;
+    if(filtre==='À relire') return it.statut==='warn'||it.statut==='ko';
+    return it.cat===filtre;
+  }
+  function renderList(newId){
+    var list=document.getElementById('list');
+    var open={};
+    Array.prototype.forEach.call(list.querySelectorAll('.item.open'),function(n){open[n.getAttribute('data-id')]=1;});
+    list.innerHTML='';
+    var shown=items.filter(visible);
+    document.getElementById('count').textContent='('+shown.length+' sur '+items.length+')';
+    if(!shown.length){
+      list.innerHTML='<div class="empty">Aucun email dans cette catégorie.</div>';
+      return;
+    }
+    shown.forEach(function(it){
+      var d=document.createElement('div');
+      d.className='item'+(it.id===newId?' new':'')+(open[it.id]?' open':'');
+      d.setAttribute('data-id',it.id);
+      d.innerHTML=
+        '<div class="row"><span class="cat">'+esc(it.cat)+'</span>'+
+        '<span class="subject">'+esc(it.sujet)+'</span>'+
+        '<span class="meta">'+esc(it.exp)+' · '+esc(it.heure)+'</span>'+
+        '<span class="st '+it.statut+'">'+esc(it.statutLib)+'</span></div>'+
+        '<div class="detail"><div class="grid">'+
+        '<div><b>Dossier rattaché</b>'+(it.dossier?esc(it.dossier):'Aucun')+'</div>'+
+        '<div><b>Immatriculation</b>'+(it.immat?esc(it.immat):'Non identifiée')+'</div>'+
+        '<div><b>Action de l\'assistant</b>'+esc(it.action)+'</div></div>'+
+        '<div class="excerpt">« '+esc(it.extrait)+' »</div>'+
+        '<div class="actions"></div></div>';
+      d.querySelector('.row').onclick=function(){d.classList.toggle('open');};
+      var act=d.querySelector('.actions');
+      if(it.statut==='warn'||it.statut==='ko'||it.statut==='info'){
+        var b1=document.createElement('button');b1.className='btn sec';b1.textContent='✔ Valider le traitement';
+        b1.onclick=function(e){e.stopPropagation();setStatut(it.id,'ok','Traité (validé)');};
+        act.appendChild(b1);
+      }
+      if(it.statut!=='warn'){
+        var b2=document.createElement('button');b2.className='btn sec';b2.textContent='⚑ Marquer à relire';
+        b2.onclick=function(e){e.stopPropagation();setStatut(it.id,'warn','À relire');};
+        act.appendChild(b2);
+      }
+      if(it.statut==='ko'){
+        var b3=document.createElement('button');b3.className='btn sec';b3.textContent='＋ Créer le dossier';
+        b3.onclick=function(e){
+          e.stopPropagation();
+          it.dossier='S-2026-0'+(430+it.id%50);
+          setStatut(it.id,'ok','Rattaché (dossier créé)');
+        };
+        act.appendChild(b3);
+      }
+      list.appendChild(d);
+    });
+  }
+  function setStatut(id,st,lib){
+    items.forEach(function(it){if(it.id===id){it.statut=st;it.statutLib=lib;}});
+    renderKpis();renderList();toast('Statut mis à jour dans le suivi : '+lib);
+  }
+  function toast(msg){
+    var t=document.getElementById('toast');
+    t.textContent=msg;t.classList.add('show');
+    clearTimeout(toast._t);toast._t=setTimeout(function(){t.classList.remove('show');},2200);
+  }
+  document.getElementById('btn-sim').onclick=function(){
+    var s=scen[idx%scen.length];idx++;
+    heureSim[1]+=3+idx%4;
+    if(heureSim[1]>=60){heureSim[0]++;heureSim[1]-=60;}
+    var it={};for(var k in s){it[k]=s[k];}
+    it.id=nextId++;it.heure=pad(heureSim[0])+':'+pad(heureSim[1]);
+    items.unshift(it);
+    filtre='Tous';renderFilters();
+    renderKpis();renderList(it.id);
+    toast('Nouvel email trié : '+it.cat+(it.dossier?' → dossier '+it.dossier:' → à qualifier'));
+  };
+  renderFilters();renderKpis();renderList();
+})();
+</script>
+</body>
+</html>
