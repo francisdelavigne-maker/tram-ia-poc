@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Démo 2 · Ressaisie devis et contrôle des références pièces – TEST Carrosserie Exemple</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1d2733;--mute:#6b7785;--line:#e1e6ec;--accent:#0b5cab;--accent2:#e8f1fb;--ok:#1f8a4c;--okbg:#e4f5ea;--warn:#b86e00;--warnbg:#fff1d9;--ko:#c0392b;--kobg:#fde7e4;--info:#0b5cab;--infobg:#e8f1fb}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);font-size:15px;line-height:1.45}
+header{background:#14233a;color:#fff;padding:16px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+header h1{margin:0;font-size:19px;font-weight:650}
+header .sub{font-size:13px;color:#b9c6d8;margin-top:2px}
+.badge-prio{background:var(--accent);color:#fff;border-radius:20px;padding:5px 13px;font-size:12.5px;font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--accent)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--accent);transition:transform .3s}
+.kpi .v.bump{transform:scale(1.12)}
+.kpi .l{font-size:12.5px;color:var(--mute);margin-top:2px}
+.kpi .n{font-size:11.5px;color:var(--mute);margin-top:6px;border-top:1px dashed var(--line);padding-top:6px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.bar h2{margin:0;font-size:17px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 13px}
+button:hover{border-color:var(--accent);color:var(--accent)}
+.cta{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:650;padding:10px 18px;font-size:15px;box-shadow:0 2px 6px rgba(11,92,171,.3)}
+.cta:hover{background:#094a8b;color:#fff}
+.filters button.on{background:var(--accent2);border-color:var(--accent);color:var(--accent);font-weight:600}
+.list{display:flex;flex-direction:column;gap:10px}
+.fiche{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.fiche.new{animation:pop .7s ease;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11,92,171,.15)}
+@keyframes pop{0%{opacity:0;transform:translateY(-18px) scale(.97)}100%{opacity:1;transform:none}}
+.head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.head:hover{background:#fafbfd}
+.ref{font-weight:700;min-width:84px}
+.veh{flex:1;min-width:180px}
+.veh small{display:block;color:var(--mute);font-size:12.5px}
+.tag{font-size:12px;font-weight:600;border-radius:20px;padding:3px 10px;white-space:nowrap}
+.s-ok{background:var(--okbg);color:var(--ok)}
+.s-warn{background:var(--warnbg);color:var(--warn)}
+.s-ko{background:var(--kobg);color:var(--ko)}
+.s-info{background:var(--infobg);color:var(--info)}
+.chev{color:var(--mute);transition:transform .2s}
+.fiche.open .chev{transform:rotate(90deg)}
+.body{display:none;padding:4px 14px 14px;border-top:1px solid var(--line);background:#fafbfd}
+.fiche.open .body{display:block}
+table{width:100%;border-collapse:collapse;margin:10px 0;font-size:13.5px}
+th{text-align:left;color:var(--mute);font-weight:600;font-size:12px;padding:6px 8px;border-bottom:1px solid var(--line)}
+td{padding:7px 8px;border-bottom:1px solid #eef1f5;vertical-align:top}
+.ref-ok{color:var(--ok);font-weight:600}
+.ref-ko{color:var(--ko);font-weight:600}
+.note{font-size:13px;color:var(--mute);margin:6px 0}
+.btns{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.btns .ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btns .ko{color:var(--ko);border-color:var(--ko)}
+.empty{padding:26px;text-align:center;color:var(--mute);background:#fff;border:1px dashed var(--line);border-radius:10px}
+footer{text-align:center;color:var(--mute);font-size:12.5px;padding:18px 10px;border-top:1px solid var(--line);background:#fff}
+.toast{position:fixed;right:16px;bottom:60px;background:#14233a;color:#fff;padding:11px 16px;border-radius:8px;font-size:14px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:none}
+@media(max-width:600px){.head{padding:10px}.kpi .v{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+<div>
+<h1>TEST Carrosserie Exemple</h1>
+<div class="sub">Pré-saisie des devis validés et contrôle des références pièces · Salon-de-Provence</div>
+</div>
+<span class="badge-prio">Priorité 2 · Ressaisie devis &amp; références pièces</span>
+</header>
+
+<main>
+<section class="kpis" id="kpis"></section>
+
+<div class="bar">
+<h2>Devis validés reçus (dossiers sinistres)</h2>
+<div class="actions">
+<div class="filters" id="filters"></div>
+<button class="cta" id="simulate">＋ Simuler un devis validé entrant</button>
+</div>
+</div>
+
+<div class="list" id="list"></div>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+"initial":[
+{"id":"D-2401","client":"M. Garcia","veh":"Renault Clio V","assureur":"MAIF","expert":"Cabinet Martin Expertises","evenement":"Choc avant gauche","statut":"integre","heure":"Aujourd'hui 08:42","lignes":[["Pare-chocs avant","8200412345","8200412345",1],["Phare gauche","260601234R","260601234R",1],["Main-d'œuvre carrosserie","—","—",6.5]]},
+{"id":"D-2402","client":"Mme Bertrand","veh":"Peugeot 308","assureur":"AXA","expert":"Expert Provence Auto","evenement":"Choc arrière, passage de l'expert effectué","statut":"anomalie","heure":"Aujourd'hui 09:15","lignes":[["Hayon arrière","9807654321","9807654312",1],["Feu arrière droit","9678900180","9678900180",1],["Peinture teinte nacrée","—","—",3]]},
+{"id":"D-2403","client":"M. Lopez","veh":"Citroën C3","assureur":"Groupama","expert":"Cabinet Rey","evenement":"Dossier assurance : devis validé par l'expert","statut":"validation","heure":"Hier 16:30","lignes":[["Aile avant droite","9801234567","9801234567",1],["Rétroviseur droit","8153QK1234","8153QK1234",1],["Main-d'œuvre carrosserie","—","—",5]]},
+{"id":"D-2404","client":"Mme Fabre","veh":"Dacia Sandero","assureur":"Matmut","expert":"Expert Provence Auto","evenement":"Choc latéral, véhicule de prêt demandé","statut":"anomalie","heure":"Hier 14:05","lignes":[["Porte arrière gauche","821016312R","821016321R",1],["Baguette latérale","768502345R","768502345R",1]]},
+{"id":"D-2405","client":"M. Roux","veh":"Ford Fiesta","assureur":"Allianz","expert":"Cabinet Martin Expertises","evenement":"Devis ressaisi, écart sur le total détecté","statut":"integre","heure":"Il y a 2 jours","lignes":[["Capot","1850045123","1850045123",1],["Calandre","1861234567","1861234567",1],["Peinture","—","—",4]]},
+{"id":"D-2406","client":"M. Nicolas","veh":"Toyota Yaris","assureur":"MMA","expert":"Cabinet Rey","evenement":"Retour pièce évité : mauvaise référence corrigée","statut":"integre","heure":"Il y a 3 jours","lignes":[["Pare-chocs arrière","5215952890","5215952890",1],["Capteur de recul","8934102345","8934102345",2]]}
+],
+"scenarios":[
+{"client":"M. Perrin","veh":"Renault Captur","assureur":"MAIF","expert":"Cabinet Rey","evenement":"Choc avant : devis validé reçu par mail","ko":false,"lignes":[["Pare-chocs avant","620222345R","620222345R",1],["Grille inférieure","622542345R","622542345R",1],["Main-d'œuvre carrosserie","—","—",7]]},
+{"client":"Mme Blanc","veh":"Peugeot 2008","assureur":"AXA","expert":"Expert Provence Auto","evenement":"Dossier assurance : PDF devis validé","ko":true,"lignes":[["Aile avant gauche","9816543210","9816543201",1],["Clignotant latéral","9677654321","9677654321",1],["Peinture","—","—",3.5]]},
+{"client":"M. Moreau","veh":"Volkswagen Polo","assureur":"Groupama","expert":"Cabinet Martin Expertises","evenement":"Passage de l'expert : accord et devis validé","ko":false,"lignes":[["Porte avant droite","6C4831056","6C4831056",1],["Joint de porte","6C4837911","6C4837911",1],["Main-d'œuvre carrosserie","—","—",5.5]]},
+{"client":"Mme Girard","veh":"Opel Corsa","assureur":"Matmut","expert":"Cabinet Rey","evenement":"Choc arrière, véhicule de prêt en cours","ko":true,"lignes":[["Pare-chocs arrière","39147123","39147132",1],["Catadioptre","39098765","39098765",2]]},
+{"client":"M. Faure","veh":"Fiat 500","assureur":"Allianz","expert":"Expert Provence Auto","evenement":"Devis complémentaire validé (dommage caché)","ko":false,"lignes":[["Longeron avant","51984321","51984321",1],["Soudure et redressage","—","—",4]]},
+{"client":"Mme Chevalier","veh":"Hyundai i20","assureur":"MMA","expert":"Cabinet Martin Expertises","evenement":"Choc latéral : devis validé par l'expert","ko":true,"lignes":[["Porte arrière droite","77004C8000","77004C8010",1],["Baguette de seuil","87752C8000","87752C8000",1],["Peinture","—","—",3]]}
+]
+}
+</script>
+
+<script>
+(function(){
+var DATA=JSON.parse(document.getElementById('mock-data').textContent);
+var state={fiches:[],filter:'all',idx:0,counter:2406,openIds:{},newId:null,treated:0,retours:0};
+var STAT={
+integre:{l:'Intégré au logiciel de chiffrage',c:'s-ok'},
+validation:{l:'À valider par Marie',c:'s-warn'},
+anomalie:{l:'Anomalie référence pièce',c:'s-ko'},
+extraction:{l:'Extraction en cours',c:'s-info'}
+};
+var FILTERS=[['all','Tous'],['validation','À valider'],['anomalie','Anomalies'],['integre','Intégrés']];
+
+function lignesInfo(f){
+var ko=0;f.lignes.forEach(function(l){if(l[1]!==l[2])ko++});return ko;
+}
+DATA.initial.forEach(function(d){
+var f=JSON.parse(JSON.stringify(d));
+f.corriges=f.statut==='integre';
+state.fiches.push(f);
+});
+state.treated=state.fiches.filter(function(f){return f.statut==='integre'}).length;
+state.retours=3;
+
+function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+
+function renderKpis(){
+var total=state.fiches.length;
+var pre=state.fiches.filter(function(f){return f.statut!=='extraction'}).length;
+var anom=state.fiches.filter(function(f){return f.statut==='anomalie'}).length;
+var attente=state.fiches.filter(function(f){return f.statut==='validation'}).length;
+var minutes=state.treated*6+Math.round(state.fiches.length*1.5);
+var heures=(0.6+state.treated*0.12).toFixed(1).replace('.',',');
+var evites=state.retours;
+var k=[
+[heures.replace(',','.')>=0?heures+' h':'','sauvées cette semaine (objectif : 0,6 h/semaine)','Estimation TRAM IA, à valider'],
+[pre,'devis pré-saisis sur '+total+' reçus','Sans ressaisie manuelle'],
+[evites,'retours de pièces évités','Mauvaise référence détectée avant commande'],
+[anom+attente,'dossiers à contrôler par Marie','Anomalie ou validation en attente']
+];
+var el=document.getElementById('kpis');
+el.innerHTML=k.map(function(x){return '<div class="kpi"><div class="v">'+esc(x[0])+'</div><div class="l">'+esc(x[1])+'</div><div class="n">'+esc(x[2])+'</div></div>'}).join('');
+}
+function bump(){
+var vs=document.querySelectorAll('.kpi .v');
+vs.forEach(function(v){v.classList.add('bump');setTimeout(function(){v.classList.remove('bump')},350)});
+}
+
+function renderFilters(){
+var el=document.getElementById('filters');
+el.innerHTML=FILTERS.map(function(f){return '<button data-f="'+f[0]+'" class="'+(state.filter===f[0]?'on':'')+'">'+f[1]+'</button>'}).join(' ');
+el.querySelectorAll('button').forEach(function(b){
+b.onclick=function(){state.filter=b.getAttribute('data-f');renderFilters();renderList()};
+});
+}
+
+function ficheHtml(f){
+var st=STAT[f.statut];
+var isOpen=state.openIds[f.id];
+var rows=f.lignes.map(function(l){
+var okRef=l[1]===l[2]||l[1]==='—';
+var devis=esc(l[1]),base=esc(l[2]);
+var etat=l[1]==='—'?'<span class="note">Main-d\'œuvre / prestation</span>':(okRef?'<span class="ref-ok">✓ Conforme</span>':'<span class="ref-ko">✗ Écart</span>');
+return '<tr><td>'+esc(l[0])+'</td><td>'+devis+'</td><td>'+(l[1]==='—'?'—':base)+'</td><td>'+l[3]+'</td><td>'+etat+'</td></tr>';
+}).join('');
+var nko=lignesInfo(f);
+var msg='';
+if(f.statut==='anomalie')msg='<p class="note"><strong>'+nko+' référence'+(nko>1?'s':'')+' à vérifier :</strong> la référence du devis ne correspond pas à la source de référence. Risque de retour pièce et de client mécontent.</p>';
+else if(f.statut==='validation')msg='<p class="note">Pré-saisie prête. Marie contrôle les lignes avant injection dans le logiciel de chiffrage.</p>';
+else if(f.statut==='integre')msg='<p class="note">Devis injecté dans le logiciel de chiffrage et Excel de suivi mis à jour.</p>';
+else msg='<p class="note">Lecture du PDF et extraction des lignes en cours…</p>';
+var btns='';
+if(f.statut==='anomalie')btns='<button class="ok" data-a="corriger" data-id="'+f.id+'">Corriger les références</button><button class="ko" data-a="chef" data-id="'+f.id+'">Demander l\'avis du chef d\'atelier</button>';
+else if(f.statut==='validation')btns='<button class="ok" data-a="valider" data-id="'+f.id+'">Valider et injecter</button><button class="ko" data-a="anomalie" data-id="'+f.id+'">Signaler une anomalie</button>';
+else if(f.statut==='integre')btns='<button data-a="rouvrir" data-id="'+f.id+'">Remettre à valider</button>';
+return '<div class="fiche'+(isOpen?' open':'')+(state.newId===f.id?' new':'')+'" data-id="'+f.id+'">'+
+'<div class="head" data-toggle="'+f.id+'"><span class="ref">'+esc(f.id)+'</span>'+
+'<span class="veh">'+esc(f.client)+' · '+esc(f.veh)+'<small>'+esc(f.evenement)+' · '+esc(f.assureur)+' · '+esc(f.heure)+'</small></span>'+
+'<span class="tag '+st.c+'">'+st.l+'</span><span class="chev">▶</span></div>'+
+'<div class="body"><p class="note">Expert : '+esc(f.expert)+'</p>'+
+'<table><thead><tr><th>Désignation</th><th>Référence du devis</th><th>Référence source</th><th>Qté / h</th><th>Contrôle</th></tr></thead><tbody>'+rows+'</tbody></table>'+msg+'<div class="btns">'+btns+'</div></div></div>';
+}
+
+function renderList(){
+var arr=state.fiches.filter(function(f){return state.filter==='all'||f.statut===state.filter});
+var el=document.getElementById('list');
+if(!arr.length){el.innerHTML='<div class="empty">Aucun devis dans cette catégorie.</div>';return}
+el.innerHTML=arr.map(ficheHtml).join('');
+el.querySelectorAll('[data-toggle]').forEach(function(h){
+h.onclick=function(){var id=h.getAttribute('data-toggle');state.openIds[id]=!state.openIds[id];h.parentNode.classList.toggle('open')};
+});
+el.querySelectorAll('[data-a]').forEach(function(b){
+b.onclick=function(e){e.stopPropagation();act(b.getAttribute('data-a'),b.getAttribute('data-id'))};
+});
+state.newId=null;
+}
+
+function find(id){for(var i=0;i<state.fiches.length;i++)if(state.fiches[i].id===id)return state.fiches[i];return null}
+
+function act(a,id){
+var f=find(id);if(!f)return;
+if(a==='valider'){f.statut='integre';state.treated++;toast('Devis '+id+' injecté dans le logiciel de chiffrage');}
+else if(a==='corriger'){
+f.lignes.forEach(function(l){l[1]=l[2]});
+f.statut='integre';state.treated++;state.retours++;toast('Références corrigées : retour de pièce évité');}
+else if(a==='chef'){toast('Avis du chef d\'atelier demandé pour '+id);}
+else if(a==='anomalie'){f.statut='anomalie';toast('Dossier '+id+' signalé en anomalie');}
+else if(a==='rouvrir'){f.statut='validation';state.treated=Math.max(0,state.treated-1);toast('Dossier '+id+' remis à valider');}
+state.openIds[id]=true;
+renderKpis();renderList();bump();
+}
+
+function simulate(){
+var s=DATA.scenarios[state.idx%DATA.scenarios.length];state.idx++;
+state.counter++;
+var id='D-'+state.counter;
+var f={id:id,client:s.client,veh:s.veh,assureur:s.assureur,expert:s.expert,evenement:s.evenement,statut:'extraction',heure:'À l\'instant',lignes:JSON.parse(JSON.stringify(s.lignes))};
+state.fiches.unshift(f);
+state.newId=id;state.filter='all';
+toast('Mail entrant : devis validé '+s.veh+' (lecture du PDF…)');
+renderFilters();renderKpis();renderList();bump();
+setTimeout(function(){
+f.statut=s.ko?'anomalie':'validation';
+if(s.ko)state.retours++;
+renderKpis();renderList();bump();
+toast(s.ko?'Anomalie de référence détectée sur '+id:'Devis '+id+' pré-saisi, à valider par Marie');
+},1300);
+}
+
+var tt;
+function toast(m){
+var t=document.getElementById('toast');t.textContent=m;t.classList.add('show');
+clearTimeout(tt);tt=setTimeout(function(){t.classList.remove('show')},2600);
+}
+
+document.getElementById('simulate').onclick=simulate;
+renderFilters();renderKpis();renderList();
+})();
+</script>
+</body>
+</html>
