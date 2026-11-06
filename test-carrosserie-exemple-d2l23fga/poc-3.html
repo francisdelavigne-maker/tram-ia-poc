@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Planification des rendez-vous atelier – TEST Carrosserie Exemple</title>
+<style>
+:root{--bg:#f1f3f6;--card:#fff;--ink:#1c2430;--mut:#667085;--line:#e2e6ec;--acc:#c2410c;--accd:#9a3412;--acs:#fff1e8;--ok:#15803d;--oks:#e3f6ea;--wa:#b45309;--was:#fef3c7;--in:#1d4ed8;--ins:#e0eaff;--ba:#b91c1c;--bas:#fde4e4}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:#1c2430;color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;border-bottom:4px solid var(--acc)}
+header h1{font-size:1.15rem;font-weight:700}
+header .sub{font-size:.82rem;color:#b9c2d0}
+.badge{background:var(--acc);color:#fff;font-size:.72rem;padding:3px 10px;border-radius:20px;font-weight:600;letter-spacing:.3px}
+main{max-width:1180px;margin:0 auto;padding:20px 16px 30px}
+h2{font-size:1rem;margin-bottom:10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--acc);transition:transform .3s}
+.kpi.bump{transform:scale(1.04)}
+.kpi .v{font-size:1.7rem;font-weight:800}
+.kpi .l{font-size:.8rem;color:var(--mut);margin-top:2px}
+.kpi .n{font-size:.72rem;color:var(--ok);margin-top:4px;font-weight:600}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:16px;margin-bottom:20px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:20px;font-size:.8rem;cursor:pointer}
+.chip.on{background:#1c2430;color:#fff;border-color:#1c2430}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:10px 18px;font-size:.9rem;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(194,65,12,.3)}
+.btn:hover{background:var(--accd)}
+.btn:active{transform:translateY(1px)}
+.btn.sm{padding:6px 12px;font-size:.78rem;box-shadow:none}
+.btn.ghost{background:#fff;color:var(--ink);border:1px solid var(--line)}
+.btn.ghost:hover{background:var(--bg)}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{border:1px solid var(--line);border-radius:9px;background:#fff;overflow:hidden}
+.item.new{animation:pop .6s ease}
+@keyframes pop{0%{opacity:0;transform:translateY(-16px);background:var(--acs)}60%{background:var(--acs)}100%{opacity:1;transform:none;background:#fff}}
+.row{display:flex;align-items:center;gap:12px;padding:11px 14px;cursor:pointer;flex-wrap:wrap}
+.row:hover{background:#fafbfc}
+.plate{font-family:ui-monospace,Consolas,monospace;background:#1c2430;color:#fff;padding:3px 8px;border-radius:5px;font-size:.78rem;white-space:nowrap}
+.main-t{flex:1;min-width:200px}
+.main-t b{display:block;font-size:.92rem}
+.main-t span{font-size:.78rem;color:var(--mut)}
+.tag{font-size:.72rem;font-weight:700;padding:3px 10px;border-radius:20px;white-space:nowrap}
+.s-attente{background:var(--was);color:var(--wa)}
+.s-propose{background:var(--ins);color:var(--in)}
+.s-confirme{background:var(--oks);color:var(--ok)}
+.s-alerte{background:var(--bas);color:var(--ba)}
+.s-atelier{background:#ede9fe;color:#6d28d9}
+.chev{color:var(--mut);transition:transform .2s;font-size:.8rem}
+.item.open .chev{transform:rotate(90deg)}
+.det{display:none;border-top:1px dashed var(--line);padding:14px;background:#fafbfc}
+.item.open .det{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:10px 18px;margin-bottom:12px;font-size:.84rem}
+.grid div b{display:block;font-size:.7rem;color:var(--mut);text-transform:uppercase;letter-spacing:.4px;margin-bottom:1px}
+.prop{background:var(--acs);border:1px solid #f6c9ad;border-radius:8px;padding:10px 12px;font-size:.83rem;margin-bottom:12px}
+.prop strong{color:var(--accd)}
+.slots{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.slot{background:#fff;border:1px solid #f0b894;color:var(--accd);padding:5px 10px;border-radius:6px;font-size:.78rem;cursor:pointer;font-weight:600}
+.slot:hover{background:var(--acc);color:#fff}
+.actions{display:flex;flex-wrap:wrap;gap:8px}
+.planning{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:.8rem;min-width:620px}
+th,td{border:1px solid var(--line);padding:6px 8px;text-align:center}
+th{background:#f6f7f9;font-size:.74rem}
+td.pl{text-align:left;font-weight:600;background:#fafbfc;white-space:nowrap}
+.cell{border-radius:4px;padding:3px 4px;font-size:.72rem;font-weight:600}
+.c-occ{background:#ede9fe;color:#6d28d9}
+.c-new{background:var(--acc);color:#fff}
+.c-lib{color:#a5adba}
+.empty{text-align:center;color:var(--mut);padding:20px;font-size:.88rem}
+.toast{position:fixed;bottom:60px;right:20px;background:#1c2430;color:#fff;padding:11px 16px;border-radius:8px;font-size:.84rem;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px;z-index:9}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;font-size:.78rem;color:var(--mut);padding:14px;border-top:1px solid var(--line);background:#fff}
+@media(max-width:600px){header{padding:12px 14px}.kpi .v{font-size:1.4rem}}
+</style>
+</head>
+<body>
+<header>
+ <div>
+  <h1>TEST Carrosserie Exemple · Planning atelier</h1>
+  <div class="sub">Assistant de planification des rendez-vous · Salon-de-Provence</div>
+ </div>
+ <span class="badge">L'IA propose, le chef d'atelier décide</span>
+</header>
+
+<main>
+ <section class="kpis" id="kpis"></section>
+
+ <section class="panel">
+  <div class="bar">
+   <h2>Charge atelier – cette semaine</h2>
+   <span style="font-size:.76rem;color:var(--mut)">5 postes · capacité simulée</span>
+  </div>
+  <div class="planning"><table id="planning"></table></div>
+ </section>
+
+ <section class="panel">
+  <div class="bar">
+   <h2>Dossiers à planifier et rendez-vous</h2>
+   <button class="btn" id="simBtn">⚡ Simuler un accord expert reçu</button>
+  </div>
+  <div class="filters" id="filters" style="margin-bottom:12px"></div>
+  <div class="list" id="list"></div>
+ </section>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "postes":["Tôlerie 1","Tôlerie 2","Cabine peinture","Préparation","Montage / finitions"],
+ "jours":["Lun","Mar","Mer","Jeu","Ven"],
+ "occupation":{
+  "Tôlerie 1":["Dupont – Clio","Dupont – Clio","Libre","Libre","Libre"],
+  "Tôlerie 2":["Libre","Martin – 308","Martin – 308","Martin – 308","Libre"],
+  "Cabine peinture":["Libre","Libre","Bernard – Juke","Bernard – Juke","Libre"],
+  "Préparation":["Roux – C3","Roux – C3","Libre","Libre","Libre"],
+  "Montage / finitions":["Libre","Libre","Libre","Moreau – Golf","Moreau – Golf"]
+ },
+ "dossiers":[
+  {"id":1,"plaque":"FK-482-LM","vehicule":"Peugeot 208","client":"Mme Garcia","type":"Sinistre assurance","assureur":"MAIF","choc":"Choc avant gauche, aile + pare-chocs","accord":"Accord expert reçu hier","pieces":"Pièces reçues","statut":"propose","duree":"2 j","urgence":"Normale","proposition":"Entrée mardi matin, tôlerie 1 libre, pièces en stock.","creneaux":["Mar 08h","Mer 08h","Jeu 08h"],"pret":true},
+  {"id":2,"plaque":"GH-129-PQ","vehicule":"Renault Captur","client":"M. Lefèvre","type":"Sinistre assurance","assureur":"AXA","choc":"Choc arrière, hayon + peinture","accord":"Accord expert reçu ce matin","pieces":"Pièces en commande, livraison jeudi","statut":"attente","duree":"3 j","urgence":"Haute","proposition":"Entrée jeudi après réception des pièces, cabine peinture libre vendredi.","creneaux":["Jeu 14h","Ven 08h"],"pret":false},
+  {"id":3,"plaque":"EV-775-AB","vehicule":"Citroën C4","client":"M. Petit","type":"Client particulier","assureur":"-","choc":"Rayures portière et rétroviseur","accord":"Sans objet (devis client accepté)","pieces":"Aucune pièce","statut":"confirme","duree":"1 j","urgence":"Basse","proposition":"Créneau confirmé vendredi 08h, rendez-vous client validé.","creneaux":["Ven 08h"],"pret":true},
+  {"id":4,"plaque":"FT-903-RN","vehicule":"Volkswagen Polo","client":"Mme Rossi","type":"Sinistre assurance","assureur":"Groupama","choc":"Choc latéral droit, porte + bas de caisse","accord":"Accord expert en attente depuis 4 jours","pieces":"À commander","statut":"alerte","duree":"4 j","urgence":"Haute","proposition":"Impossible de planifier sans accord. Escalade recommandée auprès de l'expert.","creneaux":[],"pret":false},
+  {"id":5,"plaque":"GA-316-ZC","vehicule":"Toyota Yaris","client":"M. Blanc","type":"Sinistre assurance","assureur":"Matmut","choc":"Choc avant, capot + optique","accord":"Accord expert reçu lundi","pieces":"Pièces reçues","statut":"atelier","duree":"2 j","urgence":"Normale","proposition":"Véhicule en cours de réparation, sortie prévue jeudi.","creneaux":[],"pret":true},
+  {"id":6,"plaque":"FP-640-DW","vehicule":"Dacia Sandero","client":"Mme Faure","type":"Client particulier","assureur":"-","choc":"Rayure pare-chocs arrière, devis peinture","accord":"Sans objet (devis client accepté)","pieces":"Aucune pièce","statut":"propose","duree":"1 j","urgence":"Basse","proposition":"Créneau libre mercredi en préparation, prêt véhicule possible.","creneaux":["Mer 14h","Jeu 08h"],"pret":false}
+ ],
+ "scenarios":[
+  {"plaque":"GJ-218-TX","vehicule":"Peugeot 3008","client":"M. Navarro","type":"Sinistre assurance","assureur":"Allianz","choc":"Choc avant droit, aile + phare","accord":"Accord expert reçu à l'instant","pieces":"Pièces en stock","duree":"2 j","urgence":"Normale","proposition":"Entrée immédiate possible lundi prochain, tôlerie 2 libre, véhicule de prêt à prévoir.","creneaux":["Lun 08h","Mar 08h","Mer 08h"],"pret":false},
+  {"plaque":"FW-557-KE","vehicule":"Renault Clio","client":"Mme Durand","type":"Sinistre assurance","assureur":"MMA","choc":"Choc arrière, pare-chocs + capteurs","accord":"Accord expert reçu à l'instant","pieces":"Pièces en commande, livraison mercredi","duree":"2 j","urgence":"Haute","proposition":"Entrée jeudi après livraison des pièces, ne bloque pas le planning en cours.","creneaux":["Jeu 08h","Ven 08h"],"pret":false},
+  {"plaque":"GC-084-VH","vehicule":"Ford Fiesta","client":"M. Mercier","type":"Client particulier","assureur":"-","choc":"Impact portière, débosselage sans peinture","accord":"Sans objet (demande de rendez-vous client)","pieces":"Aucune pièce","duree":"1 j","urgence":"Basse","proposition":"Petit chantier, à caser sur un créneau libre en tôlerie 1 mercredi.","creneaux":["Mer 08h","Jeu 14h"],"pret":false},
+  {"plaque":"FN-731-SG","vehicule":"Opel Corsa","client":"Mme Henry","type":"Sinistre assurance","assureur":"Pacifica","choc":"Choc latéral, porte arrière + peinture","accord":"Accord expert reçu à l'instant","pieces":"Pièces reçues","duree":"3 j","urgence":"Haute","proposition":"Priorité sinistre : cabine peinture libre jeudi et vendredi, entrée tôlerie mardi.","creneaux":["Mar 14h","Mer 08h"],"pret":true},
+  {"plaque":"GM-469-BL","vehicule":"Kia Sportage","client":"M. Lopez","type":"Sinistre assurance","assureur":"AXA","choc":"Choc avant, pare-chocs + calandre","accord":"Accord expert reçu à l'instant","pieces":"Pièces à commander","duree":"2 j","urgence":"Normale","proposition":"Commande pièces à lancer d'abord, entrée proposée en début de semaine suivante.","creneaux":["Lun 08h","Mar 08h"],"pret":false}
+ ]
+}
+</script>
+
+<script>
+(function(){
+ var DATA=JSON.parse(document.getElementById('mock-data').textContent);
+ var etat=DATA.dossiers.map(function(d){return Object.assign({},d)});
+ var occ=JSON.parse(JSON.stringify(DATA.occupation));
+ var filtre='tous',ouvert=null,idx=0,nextId=100,nbPlanifies=0,nbSim=0;
+ var LAB={attente:'En attente de pièces',propose:'Créneau proposé',confirme:'RDV confirmé',alerte:'Accord expert manquant',atelier:'En réparation'};
+ var FIL=[['tous','Tous'],['propose','À valider'],['attente','Pièces en attente'],['alerte','Alertes'],['confirme','Confirmés'],['atelier','En atelier']];
+
+ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+ function toast(m){var t=document.getElementById('toast');t.textContent=m;t.className='toast show';clearTimeout(t._h);t._h=setTimeout(function(){t.className='toast'},2600)}
+
+ function occupancyRate(){
+  var tot=0,pris=0;
+  DATA.postes.forEach(function(p){occ[p].forEach(function(c){tot++;if(c!=='Libre')pris++})});
+  return Math.round(pris/tot*100);
+ }
+
+ function renderKpis(){
+  var conf=etat.filter(function(d){return d.statut==='confirme'||d.statut==='atelier'}).length;
+  var att=etat.filter(function(d){return d.statut==='propose'}).length;
+  var k=[
+   {v:(1.8+nbPlanifies*0.4).toFixed(1).replace('.',',')+' h',l:'Temps de planification sauvé / semaine',n:'vs 3 h estimées sans assistance'},
+   {v:(1.5+nbPlanifies*0.1).toFixed(1).replace('.',',')+' j',l:'Délai moyen accord expert → entrée atelier',n:'cible : moins de 2 jours'},
+   {v:(68+Math.min(occupancyRate()-30,20))+' %',l:"Taux d'occupation atelier",n:'+ '+(nbPlanifies*2+4)+' pts depuis le pilote'},
+   {v:(25+nbPlanifies+nbSim)+' / 32',l:'Véhicules par mois (objectif fin 2027)',n:conf+' RDV confirmés · '+att+' à valider'}
+  ];
+  document.getElementById('kpis').innerHTML=k.map(function(x){return '<div class="kpi"><div class="v">'+x.v+'</div><div class="l">'+x.l+'</div><div class="n">'+x.n+'</div></div>'}).join('');
+ }
+
+ function bump(){var els=document.querySelectorAll('.kpi');for(var i=0;i<els.length;i++){els[i].classList.add('bump')}setTimeout(function(){for(var i=0;i<els.length;i++){els[i].classList.remove('bump')}},350)}
+
+ function renderPlanning(){
+  var h='<tr><th>Poste</th>'+DATA.jours.map(function(j){return '<th>'+j+'</th>'}).join('')+'</tr>';
+  DATA.postes.forEach(function(p){
+   h+='<tr><td class="pl">'+p+'</td>';
+   occ[p].forEach(function(c){
+    if(c==='Libre')h+='<td><span class="cell c-lib">libre</span></td>';
+    else if(c.indexOf('★')===0)h+='<td><span class="cell c-new">'+esc(c.slice(1))+'</span></td>';
+    else h+='<td><span class="cell c-occ">'+esc(c)+'</span></td>';
+   });
+   h+='</tr>';
+  });
+  document.getElementById('planning').innerHTML=h;
+ }
+
+ function renderFilters(){
+  document.getElementById('filters').innerHTML=FIL.map(function(f){
+   var n=f[0]==='tous'?etat.length:etat.filter(function(d){return d.statut===f[0]}).length;
+   return '<button class="chip'+(filtre===f[0]?' on':'')+'" data-f="'+f[0]+'">'+f[1]+' ('+n+')</button>';
+  }).join('');
+ }
+
+ function renderList(newId){
+  var liste=etat.filter(function(d){return filtre==='tous'||d.statut===filtre});
+  var el=document.getElementById('list');
+  if(!liste.length){el.innerHTML='<div class="empty">Aucun dossier dans cette catégorie.</div>';return}
+  el.innerHTML=liste.map(function(d){
+   var o=ouvert===d.id;
+   var slots=d.creneaux.map(function(c){return '<button class="slot" data-act="slot" data-id="'+d.id+'" data-c="'+esc(c)+'">'+esc(c)+'</button>'}).join('');
+   var acts='';
+   if(d.statut==='propose'||d.statut==='attente'){
+    acts+='<button class="btn sm" data-act="confirm" data-id="'+d.id+'">✔ Valider la proposition</button>';
+   }
+   if(d.statut==='alerte'){
+    acts+='<button class="btn sm" data-act="relance" data-id="'+d.id+'">Relancer l\'expert</button>';
+   }
+   if(d.statut==='confirme'){
+    acts+='<button class="btn sm" data-act="entree" data-id="'+d.id+'">Passer en atelier</button>';
+   }
+   if(d.statut==='atelier'){
+    acts+='<button class="btn sm" data-act="termine" data-id="'+d.id+'">Marquer terminé</button>';
+   }
+   if(d.statut!=='alerte'&&d.statut!=='atelier'){
+    acts+='<button class="btn sm ghost" data-act="pret" data-id="'+d.id+'">'+(d.pret?'Annuler le prêt véhicule':'Réserver un prêt véhicule')+'</button>';
+   }
+   return '<div class="item'+(o?' open':'')+(d.id===newId?' new':'')+'" data-id="'+d.id+'">'+
+    '<div class="row" data-act="toggle" data-id="'+d.id+'">'+
+     '<span class="plate">'+esc(d.plaque)+'</span>'+
+     '<div class="main-t"><b>'+esc(d.vehicule)+' · '+esc(d.client)+'</b><span>'+esc(d.choc)+'</span></div>'+
+     '<span class="tag s-'+d.statut+'">'+LAB[d.statut]+'</span><span class="chev">▶</span></div>'+
+    '<div class="det"><div class="grid">'+
+     '<div><b>Type de dossier</b>'+esc(d.type)+(d.assureur!=='-'?' · '+esc(d.assureur):'')+'</div>'+
+     '<div><b>Accord expert</b>'+esc(d.accord)+'</div>'+
+     '<div><b>Pièces</b>'+esc(d.pieces)+'</div>'+
+     '<div><b>Durée estimée</b>'+esc(d.duree)+'</div>'+
+     '<div><b>Urgence</b>'+esc(d.urgence)+'</div>'+
+     '<div><b>Prêt véhicule</b>'+(d.pret?'Réservé':'Non réservé')+'</div></div>'+
+     '<div class="prop"><strong>Proposition de l\'assistant :</strong> '+esc(d.proposition)+
+      (slots?'<div class="slots">'+slots+'</div>':'')+'</div>'+
+     '<div class="actions">'+acts+'</div></div></div>';
+  }).join('');
+ }
+
+ function renderAll(newId){renderKpis();renderPlanning();renderFilters();renderList(newId)}
+
+ function trouver(id){for(var i=0;i<etat.length;i++){if(etat[i].id===id)return etat[i]}return null}
+
+ function reserver(d,c){
+  var jour=c.split(' ')[0];var ji=DATA.jours.indexOf(jour);
+  if(ji<0)return;
+  for(var i=0;i<DATA.postes.length;i++){
+   var p=DATA.postes[i];
+   if(occ[p][ji]==='Libre'){occ[p][ji]='★'+d.client.replace(/^(M\.|Mme)\s*/,'')+' – '+d.vehicule.split(' ').pop();return}
+  }
+ }
+
+ document.getElementById('list').addEventListener('click',function(e){
+  var t=e.target.closest('[data-act]');if(!t)return;
+  var act=t.getAttribute('data-act');var id=parseInt(t.getAttribute('data-id'),10);var d=trouver(id);if(!d)return;
+  if(act==='toggle'){ouvert=(ouvert===id)?null:id;renderList();return}
+  if(act==='slot'){
+   var c=t.getAttribute('data-c');
+   reserver(d,c);d.statut='confirme';d.creneaux=[c];d.proposition='Créneau retenu par le chef d\'atelier : '+c+'. Client prévenu.';
+   nbPlanifies++;toast('Créneau '+c+' retenu pour '+d.vehicule);ouvert=id;renderAll();bump();return;
+  }
+  if(act==='confirm'){
+   if(d.creneaux.length){reserver(d,d.creneaux[0]);d.proposition='Proposition validée : '+d.creneaux[0]+'. Client prévenu.'}
+   d.statut='confirme';nbPlanifies++;toast('RDV confirmé : '+d.vehicule+' ('+d.client+')');renderAll();bump();return;
+  }
+  if(act==='relance'){
+   d.statut='attente';d.accord='Relance envoyée aujourd\'hui à l\'expert';d.proposition='Relance partie. En attente de retour, planification dès réception.';
+   toast('Relance expert envoyée pour '+d.plaque);renderAll();return;
+  }
+  if(act==='entree'){d.statut='atelier';toast(d.vehicule+' est entré en atelier');renderAll();return}
+  if(act==='termine'){
+   etat=etat.filter(function(x){return x.id!==id});
+   toast(d.vehicule+' prêt à être restitué');if(ouvert===id)ouvert=null;renderAll();return;
+  }
+  if(act==='pret'){d.pret=!d.pret;toast(d.pret?'Prêt véhicule réservé':'Prêt véhicule annulé');renderList();return}
+ });
+
+ document.getElementById('filters').addEventListener('click',function(e){
+  var t=e.target.closest('[data-f]');if(!t)return;
+  filtre=t.getAttribute('data-f');renderFilters();renderList();
+ });
+
+ document.getElementById('simBtn').addEventListener('click',function(){
+  var s=DATA.scenarios[idx%DATA.scenarios.length];idx++;nbSim++;
+  var d=Object.assign({},s,{id:nextId++,statut:'propose'});
+  etat.unshift(d);
+  if(filtre!=='tous'&&filtre!=='propose')filtre='tous';
+  ouvert=d.id;
+  toast('Accord expert reçu : '+d.vehicule+' ('+d.assureur+'), créneaux proposés');
+  renderAll(d.id);bump();
+  var it=document.querySelector('.item.new');if(it&&it.scrollIntoView)it.scrollIntoView({behavior:'smooth',block:'nearest'});
+ });
+
+ renderAll();
+})();
+</script>
+</body>
+</html>
