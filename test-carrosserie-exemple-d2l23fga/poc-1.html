@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Démo 1 · Relances automatiques experts et assureurs – TEST Carrosserie Exemple</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1f2933;--mute:#6b7785;--line:#e1e6ec;--accent:#0b5cad;--accent-d:#084883;--ok:#1e8a4c;--warn:#c77700;--bad:#c0392b;--info:#2f6fb5}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:#14253a;color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+header h1{font-size:18px;margin:0;font-weight:650}
+header .sub{font-size:13px;color:#b9c6d6}
+.badge{background:var(--accent);color:#fff;border-radius:14px;padding:4px 12px;font-size:12px;font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+h2{font-size:15px;text-transform:uppercase;letter-spacing:.05em;color:var(--mute);margin:26px 0 10px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--accent)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--accent-d);transition:transform .3s}
+.kpi .v.bump{transform:scale(1.12)}
+.kpi .l{font-size:13px;color:var(--mute);margin-top:2px}
+.kpi .n{font-size:11.5px;color:var(--mute);margin-top:6px}
+.bar{height:6px;background:var(--line);border-radius:4px;margin-top:8px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .6s}
+.toolbar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;color:var(--ink);padding:6px 12px;border-radius:16px;font-size:13px;cursor:pointer}
+.chip.on{background:var(--accent);color:#fff;border-color:var(--accent)}
+.cta{background:var(--accent);color:#fff;border:0;border-radius:8px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(11,92,173,.3)}
+.cta:hover{background:var(--accent-d)}
+.cta:active{transform:translateY(1px)}
+.list{display:flex;flex-direction:column;gap:8px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.card.new{animation:slide .6s ease-out;border-color:var(--accent);box-shadow:0 0 0 3px rgba(11,92,173,.15)}
+@keyframes slide{from{opacity:0;transform:translateY(-18px)}to{opacity:1;transform:none}}
+.row{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.row:hover{background:#f9fbfd}
+.ref{font-weight:700;font-size:13px;color:var(--accent-d);min-width:84px}
+.main{flex:1;min-width:200px}
+.main b{font-size:14px}
+.main span{display:block;font-size:12.5px;color:var(--mute)}
+.st{font-size:12px;font-weight:600;padding:4px 10px;border-radius:12px;white-space:nowrap}
+.s-attente{background:#fdf0d9;color:var(--warn)}
+.s-relance{background:#e2edf9;color:var(--info)}
+.s-accord{background:#dff3e7;color:var(--ok)}
+.s-escalade{background:#f9e0dd;color:var(--bad)}
+.s-valider{background:#ece5f8;color:#6a3fb0}
+.chev{color:var(--mute);transition:transform .2s;font-size:12px}
+.card.open .chev{transform:rotate(90deg)}
+.detail{display:none;padding:0 14px 14px;border-top:1px dashed var(--line);background:#fbfcfe}
+.card.open .detail{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 18px;margin:12px 0;font-size:13px}
+.grid div small{display:block;color:var(--mute);font-size:11.5px}
+.draft{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px;font-size:13px;white-space:pre-line;margin:8px 0}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.btn{border:1px solid var(--accent);background:#fff;color:var(--accent);padding:7px 12px;border-radius:7px;font-size:13px;cursor:pointer;font-weight:600}
+.btn:hover{background:var(--accent);color:#fff}
+.btn.ok{border-color:var(--ok);color:var(--ok)}.btn.ok:hover{background:var(--ok);color:#fff}
+.btn.bad{border-color:var(--bad);color:var(--bad)}.btn.bad:hover{background:var(--bad);color:#fff}
+.tl{margin:8px 0 0;padding:0;list-style:none;font-size:12.5px;color:var(--mute)}
+.tl li{padding:2px 0 2px 14px;position:relative}
+.tl li:before{content:"";position:absolute;left:0;top:8px;width:6px;height:6px;border-radius:50%;background:var(--accent)}
+.empty{text-align:center;color:var(--mute);padding:24px;background:#fff;border:1px dashed var(--line);border-radius:10px}
+.note{font-size:12.5px;color:var(--mute);margin-top:8px}
+.toast{position:fixed;right:18px;bottom:60px;background:#14253a;color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;font-size:12.5px;color:var(--mute);padding:16px;border-top:1px solid var(--line);background:#fff}
+@media(max-width:600px){header{padding:12px 14px}.kpi .v{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>TEST Carrosserie Exemple</h1>
+    <div class="sub">Suivi des relances experts et assureurs · Dossiers sinistres</div>
+  </div>
+  <span class="badge">Chantier 1 · Relances automatiques</span>
+</header>
+
+<main>
+  <h2>Indicateurs de performance</h2>
+  <section class="kpis" id="kpis"></section>
+
+  <h2>Dossiers sinistres en attente d'accord</h2>
+  <div class="toolbar">
+    <div class="filters" id="filters"></div>
+    <button class="cta" id="simulate">✉ Simuler un mail entrant d'expert ou d'assureur</button>
+  </div>
+  <div class="list" id="list"></div>
+  <p class="note">Cliquez sur un dossier pour le déplier, valider une relance, simuler l'accord de l'expert ou escalader. Aucun envoi réel : démonstration.</p>
+</main>
+
+<div class="toast" id="toast"></div>
+<footer>Démonstration – données fictives – TRAM IA</footer>
+
+<script type="application/json" id="mock-data">
+{
+ "dossiers":[
+  {"id":"SIN-2481","client":"M. Garcia","vehicule":"Renault Clio – choc avant gauche","assureur":"MAAF","expert":"Cabinet Expertis Sud","statut":"relance","jours":3,"relances":1,"journal":["Ordre de mission reçu et dossier créé","Relance n°1 envoyée à l'expert (J+3)"]},
+  {"id":"SIN-2483","client":"Mme Bertrand","vehicule":"Peugeot 308 – choc arrière","assureur":"AXA","expert":"Expert Azur Auto","statut":"valider","jours":3,"relances":0,"journal":["Ordre de mission reçu et dossier créé","Brouillon de relance généré, en attente de validation par Marie"]},
+  {"id":"SIN-2476","client":"M. Lopez","vehicule":"Citroën C3 – aile droite et porte","assureur":"Groupama","expert":"Cabinet Provence Expertises","statut":"escalade","jours":9,"relances":3,"journal":["Ordre de mission reçu","Relances n°1, n°2 et n°3 envoyées","Escalade : appel à l'expert recommandé à Marie et au gérant"]},
+  {"id":"SIN-2488","client":"Mme Roux","vehicule":"Toyota Yaris – pare-chocs avant","assureur":"MACIF","expert":"Expert Méditerranée","statut":"attente","jours":1,"relances":0,"journal":["Ordre de mission reçu et dossier créé","Prochaine relance prévue à J+3"]},
+  {"id":"SIN-2470","client":"M. Fabre","vehicule":"Volkswagen Golf – choc latéral","assureur":"Allianz","expert":"Cabinet Expertis Sud","statut":"accord","jours":2,"relances":1,"journal":["Relance n°1 envoyée","Accord de l'expert reçu par mail, relances stoppées","Chef d'atelier prévenu : véhicule à entrer en réparation"]},
+  {"id":"SIN-2479","client":"M. Martin","vehicule":"Ford Fiesta – capot et phare","assureur":"Matmut","expert":"Expert Azur Auto","statut":"relance","jours":6,"relances":2,"journal":["Ordre de mission reçu","Relance n°1 (J+3)","Relance n°2 (J+6) envoyée"]},
+  {"id":"SIN-2485","client":"Mme Vidal","vehicule":"Dacia Sandero – hayon","assureur":"GMF","expert":"Cabinet Provence Expertises","statut":"attente","jours":2,"relances":0,"journal":["Ordre de mission reçu et dossier créé","Prochaine relance prévue à J+3"]}
+ ],
+ "scenarios":[
+  {"client":"M. Perrin","vehicule":"Renault Captur – choc avant droit","assureur":"MAIF","expert":"Expert Méditerranée","mail":"Ordre de mission – dossier sinistre à prendre en charge"},
+  {"client":"Mme Faure","vehicule":"Peugeot 208 – porte arrière gauche","assureur":"AXA","expert":"Cabinet Expertis Sud","mail":"Demande d'accord sur devis de réparation"},
+  {"client":"M. Blanc","vehicule":"BMW Série 1 – pare-chocs arrière","assureur":"Allianz","expert":"Expert Azur Auto","mail":"Ordre de mission – expertise à programmer"},
+  {"client":"Mme Meyer","vehicule":"Citroën C4 – aile avant gauche","assureur":"Groupama","expert":"Cabinet Provence Expertises","mail":"Complément de pièces demandé par l'expert"},
+  {"client":"M. Chabert","vehicule":"Fiat 500 – choc latéral droit","assureur":"MACIF","expert":"Expert Méditerranée","mail":"Ordre de mission – dossier en attente d'accord"}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var DATA;
+  try{DATA=JSON.parse(document.getElementById('mock-data').textContent);}catch(e){DATA={dossiers:[],scenarios:[]};}
+  var dossiers=DATA.dossiers.slice();
+  var scenarios=DATA.scenarios;
+  var scIdx=0, nextId=2490, filtre='tous', ouverts={}, newId=null;
+  var stats={heures:4.3,delai:3.2,relancesAuto:62,oublis:0};
+  var LABELS={attente:'En attente d\'accord',relance:'Relancé',valider:'Brouillon à valider',accord:'Accord reçu',escalade:'À escalader (appel)'};
+  var CLS={attente:'s-attente',relance:'s-relance',valider:'s-valider',accord:'s-accord',escalade:'s-escalade'};
+  var FILTRES=[['tous','Tous'],['valider','À valider'],['relance','Relancés'],['escalade','À escalader'],['accord','Accord reçu']];
+
+  function $(id){return document.getElementById(id);}
+  function toast(m){var t=$('toast');t.textContent=m;t.classList.add('show');clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove('show');},2600);}
+
+  function brouillon(d){
+    var n=d.relances+1;
+    return 'Objet : Dossier '+d.id+' – '+d.vehicule+' – relance n°'+n+'\n\nBonjour,\n\nNous revenons vers vous concernant le dossier '+d.id+' ('+d.assureur+', client '+d.client+'). Le véhicule est immobilisé à l\'atelier dans l\'attente de votre accord sur le devis.\nPourriez-vous nous indiquer la date de passage de l\'expert ou nous confirmer votre accord ?\n\nCordialement,\nMarie – TEST Carrosserie Exemple';
+  }
+
+  function renderKpis(){
+    var actifs=dossiers.filter(function(d){return d.statut!=='accord';}).length;
+    var acc=dossiers.filter(function(d){return d.statut==='accord';}).length;
+    var taux=dossiers.length?Math.round(acc/dossiers.length*100):0;
+    var k=[
+      ['4h30','Heures sauvées par semaine','Cible audit : 1,3 h relances + tri des mails (estimation)',100,'h'],
+      [stats.heures.toFixed(1).replace('.',',')+' h','Cumul sauvé ce mois','Passe de 20 min à 6 min de relance par dossier',Math.min(100,stats.heures/6*100),'c'],
+      [stats.delai.toFixed(1).replace('.',',')+' j','Délai moyen d\'accord expert','Départ : 4 jours · objectif en baisse',Math.max(0,(4-stats.delai)/4*100*3),'d'],
+      [stats.relancesAuto+'','Relances préparées automatiquement','Validées par Marie · 0 relance oubliée',Math.min(100,stats.relancesAuto),'r'],
+      [actifs+'','Dossiers actifs en attente d\'accord','Place atelier occupée · 25 véhicules/mois traités',Math.min(100,actifs*10),'a'],
+      [taux+' %','Dossiers avec accord obtenu','Parmi les dossiers affichés',taux,'t']
+    ];
+    $('kpis').innerHTML=k.map(function(x){
+      return '<div class="kpi"><div class="v" data-k="'+x[4]+'">'+x[0]+'</div><div class="l">'+x[1]+'</div><div class="bar"><i style="width:'+x[3]+'%"></i></div><div class="n">'+x[2]+'</div></div>';
+    }).join('');
+  }
+  function bump(){var v=document.querySelectorAll('.kpi .v');for(var i=0;i<v.length;i++){(function(e){e.classList.add('bump');setTimeout(function(){e.classList.remove('bump');},400);})(v[i]);}}
+
+  function renderFilters(){
+    $('filters').innerHTML=FILTRES.map(function(f){
+      var c=f[0]==='tous'?dossiers.length:dossiers.filter(function(d){return d.statut===f[0];}).length;
+      return '<button class="chip'+(filtre===f[0]?' on':'')+'" data-f="'+f[0]+'">'+f[1]+' ('+c+')</button>';
+    }).join('');
+    var b=$('filters').querySelectorAll('.chip');
+    for(var i=0;i<b.length;i++){b[i].onclick=function(){filtre=this.getAttribute('data-f');render();};}
+  }
+
+  function actionsFor(d){
+    var h='';
+    if(d.statut==='valider') h+='<button class="btn ok" data-a="envoyer" data-id="'+d.id+'">Valider et envoyer la relance</button>';
+    if(d.statut==='relance'||d.statut==='attente') h+='<button class="btn" data-a="brouillon" data-id="'+d.id+'">Générer la relance suivante</button>';
+    if(d.statut!=='accord') h+='<button class="btn ok" data-a="accord" data-id="'+d.id+'">Accord de l\'expert reçu</button>';
+    if(d.statut!=='accord'&&d.statut!=='escalade') h+='<button class="btn bad" data-a="escalade" data-id="'+d.id+'">Escalader (appel à l\'expert)</button>';
+    if(d.statut==='accord') h+='<span class="note">Chef d\'atelier notifié · plus aucune relance ne partira.</span>';
+    return h;
+  }
+
+  function render(){
+    renderKpis();renderFilters();
+    var liste=dossiers.filter(function(d){return filtre==='tous'||d.statut===filtre;});
+    if(!liste.length){$('list').innerHTML='<div class="empty">Aucun dossier dans cette catégorie.</div>';return;}
+    $('list').innerHTML=liste.map(function(d){
+      var o=ouverts[d.id]?' open':'', n=(newId===d.id)?' new':'';
+      var showDraft=(d.statut==='valider'||d.statut==='relance'||d.statut==='attente'||d.statut==='escalade');
+      return '<div class="card'+o+n+'" data-id="'+d.id+'">'+
+        '<div class="row" data-t="'+d.id+'"><span class="ref">'+d.id+'</span>'+
+        '<div class="main"><b>'+d.client+' · '+d.vehicule+'</b><span>'+d.assureur+' · '+d.expert+' · '+d.jours+' j sans réponse</span></div>'+
+        '<span class="st '+CLS[d.statut]+'">'+LABELS[d.statut]+'</span><span class="chev">▶</span></div>'+
+        '<div class="detail"><div class="grid">'+
+        '<div><small>Assureur</small>'+d.assureur+'</div><div><small>Expert</small>'+d.expert+'</div>'+
+        '<div><small>Relances envoyées</small>'+d.relances+'</div><div><small>Attente d\'accord</small>'+d.jours+' jour(s)</div></div>'+
+        (showDraft?'<small style="color:#6b7785">Brouillon de relance préparé :</small><div class="draft">'+brouillon(d)+'</div>':'')+
+        '<div class="actions">'+actionsFor(d)+'</div>'+
+        '<ul class="tl">'+d.journal.map(function(j){return '<li>'+j+'</li>';}).join('')+'</ul></div></div>';
+    }).join('');
+    var rows=document.querySelectorAll('.row');
+    for(var i=0;i<rows.length;i++){rows[i].onclick=function(){var id=this.getAttribute('data-t');ouverts[id]=!ouverts[id];newId=null;render();};}
+    var btns=document.querySelectorAll('.detail .btn');
+    for(var j=0;j<btns.length;j++){btns[j].onclick=function(e){e.stopPropagation();agir(this.getAttribute('data-a'),this.getAttribute('data-id'));};}
+  }
+
+  function agir(a,id){
+    var d=dossiers.filter(function(x){return x.id===id;})[0];if(!d)return;
+    newId=null;
+    if(a==='envoyer'||a==='brouillon'){
+      if(a==='brouillon'){d.statut='valider';d.journal.push('Brouillon de relance n°'+(d.relances+1)+' généré, à valider par Marie');toast('Brouillon généré pour '+id);}
+      else{d.relances++;d.statut=d.relances>=3?'escalade':'relance';d.jours=d.jours;stats.relancesAuto++;stats.heures+=0.2;
+        d.journal.push('Relance n°'+d.relances+' validée par Marie et envoyée');
+        if(d.statut==='escalade')d.journal.push('Escalade : 3 relances sans réponse, appel recommandé');
+        toast('Relance n°'+d.relances+' envoyée (simulation)');bump();}
+    }else if(a==='accord'){
+      d.statut='accord';d.journal.push('Accord de l\'expert reçu, relances stoppées');d.journal.push('Chef d\'atelier prévenu : véhicule à entrer en réparation');
+      stats.delai=Math.max(1.5,stats.delai-0.2);toast('Accord enregistré · chef d\'atelier prévenu');bump();
+    }else if(a==='escalade'){
+      d.statut='escalade';d.journal.push('Escalade manuelle : appel à l\'expert par Marie ou le gérant');toast('Dossier escaladé pour appel');
+    }
+    render();
+  }
+
+  $('simulate').onclick=function(){
+    var s=scenarios[scIdx%scenarios.length];scIdx++;
+    var id='SIN-'+(nextId++);
+    var d={id:id,client:s.client,vehicule:s.vehicule,assureur:s.assureur,expert:s.expert,statut:'valider',jours:3,relances:0,
+      journal:['Mail entrant reçu : « '+s.mail+' »','Mail étiqueté assureur/expert et dossier créé automatiquement','Brouillon de relance généré, en attente de validation par Marie']};
+    dossiers.unshift(d);newId=id;ouverts[id]=true;filtre='tous';
+    stats.relancesAuto++;stats.heures+=0.3;
+    render();bump();toast('Nouveau dossier '+id+' créé depuis un mail entrant');
+    var el=document.querySelector('.card.new');if(el&&el.scrollIntoView){try{el.scrollIntoView({behavior:'smooth',block:'nearest'});}catch(e){}}
+  };
+
+  render();
+})();
+</script>
+</body>
+</html>
