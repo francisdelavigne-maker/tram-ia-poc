@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Assistance à la validation des devis d'experts – TEST Carrosserie Exemple 2</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1f2937;--muted:#6b7280;--line:#e2e6ec;--accent:#1d4ed8;--accent-d:#1e3a8a;--ok:#15803d;--okbg:#dcfce7;--warn:#b45309;--warnbg:#fef3c7;--ko:#b91c1c;--kobg:#fee2e2;--info:#1d4ed8;--infobg:#dbeafe}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:var(--accent-d);color:#fff;padding:16px 24px;display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:10px}
+header h1{margin:0;font-size:20px}
+header .sub{font-size:13px;opacity:.85}
+header .badge{background:rgba(255,255,255,.15);padding:6px 12px;border-radius:20px;font-size:12px}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+h2{font-size:16px;margin:26px 0 10px;color:var(--accent-d)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--accent)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--accent-d);transition:transform .3s}
+.kpi .v.bump{transform:scale(1.15)}
+.kpi .l{font-size:12.5px;color:var(--muted);margin-top:2px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:26px 0 10px}
+.bar h2{margin:0}
+.tools{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 12px;font-size:13px}
+button:hover{border-color:var(--accent)}
+.filter.active{background:var(--accent);color:#fff;border-color:var(--accent)}
+.demo{background:var(--accent);color:#fff;border-color:var(--accent);font-weight:600;padding:10px 18px;font-size:14px;box-shadow:0 2px 6px rgba(29,78,216,.3)}
+.demo:hover{background:var(--accent-d)}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--line);border-radius:10px;overflow:hidden}
+.item.s-ok{border-left-color:var(--ok)}.item.s-warn{border-left-color:var(--warn)}.item.s-ko{border-left-color:var(--ko)}.item.s-info{border-left-color:var(--info)}
+.item.new{animation:pop .7s ease}
+@keyframes pop{0%{opacity:0;transform:translateY(-18px) scale(.97);background:#dbeafe}60%{opacity:1;transform:none;background:#dbeafe}100%{background:#fff}}
+.head{display:flex;flex-wrap:wrap;align-items:center;gap:10px;padding:12px 14px;cursor:pointer}
+.head:hover{background:#f8fafc}
+.ref{font-weight:700;font-size:13px;color:var(--accent-d)}
+.title{flex:1;min-width:200px;font-size:14px}
+.title small{display:block;color:var(--muted);font-size:12px}
+.pill{font-size:11.5px;font-weight:600;padding:3px 10px;border-radius:12px;white-space:nowrap}
+.p-ok{background:var(--okbg);color:var(--ok)}.p-warn{background:var(--warnbg);color:var(--warn)}.p-ko{background:var(--kobg);color:var(--ko)}.p-info{background:var(--infobg);color:var(--info)}
+.amount{font-weight:600;font-size:14px;min-width:80px;text-align:right}
+.chev{color:var(--muted);transition:transform .2s}
+.item.open .chev{transform:rotate(90deg)}
+.body{display:none;padding:0 14px 14px;border-top:1px solid var(--line);background:#fafbfd}
+.item.open .body{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:12px}
+.box{background:#fff;border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.box h4{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+table{width:100%;border-collapse:collapse;font-size:13px}
+td,th{padding:4px 6px;text-align:left;border-bottom:1px solid var(--line)}
+th{font-size:11.5px;color:var(--muted);font-weight:600}
+td.r,th.r{text-align:right}
+.alert{font-size:13px;padding:6px 8px;border-radius:6px;margin-bottom:6px;display:flex;gap:6px}
+.alert.a-ko{background:var(--kobg);color:var(--ko)}.alert.a-warn{background:var(--warnbg);color:var(--warn)}.alert.a-ok{background:var(--okbg);color:var(--ok)}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px;align-items:center}
+.actions .lab{font-size:12.5px;color:var(--muted);margin-right:4px}
+.b-ok{background:var(--ok);color:#fff;border-color:var(--ok)}
+.b-ko{background:var(--ko);color:#fff;border-color:var(--ko)}
+.b-warn{background:var(--warn);color:#fff;border-color:var(--warn)}
+.note{font-size:12px;color:var(--muted);margin-top:8px}
+.empty{padding:24px;text-align:center;color:var(--muted);background:#fff;border:1px dashed var(--line);border-radius:10px}
+footer{text-align:center;font-size:12px;color:var(--muted);padding:18px 10px;border-top:1px solid var(--line);background:#fff}
+.toast{position:fixed;bottom:20px;right:20px;background:#111827;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:none}
+@media(max-width:600px){.amount{text-align:left}header h1{font-size:17px}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>TEST Carrosserie Exemple 2</h1>
+    <div class="sub">Assistance à la validation des devis d'experts · Salon-de-Provence</div>
+  </div>
+  <div class="badge">Niveau 1-2 : l'IA signale, l'humain décide</div>
+</header>
+
+<main>
+  <h2>Indicateurs de performance</h2>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="bar">
+    <h2>Devis d'experts reçus</h2>
+    <div class="tools">
+      <button class="filter active" data-f="all">Tous</button>
+      <button class="filter" data-f="todo">À décider</button>
+      <button class="filter" data-f="alert">Avec alertes</button>
+      <button class="filter" data-f="done">Traités</button>
+      <button class="demo" id="demoBtn">&#9993; Simuler un devis d'expert entrant</button>
+    </div>
+  </div>
+  <div class="list" id="list"></div>
+  <div class="note">Cliquez sur un devis pour afficher la fiche d'alertes, comparer avec le constat atelier et décider (valider, contester, demander l'avis du chef d'atelier).</div>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "initial":[
+  {"ref":"DOS-2611-014","client":"M. Garcia","veh":"Renault Clio V · AB-214-CD","expert":"Cabinet Expertis Sud","assureur":"MAIF","statut":"alerte","montant":2840,"mo":14,"sem":"il y a 25 min",
+   "postes":[["Pare-chocs avant",420,420],["Aile avant droite",610,610],["Main d'œuvre tôlerie",14,14],["Peinture",520,780]],
+   "alertes":[["ko","Peinture : 780 € au devis contre 520 € au constat atelier (+260 €)"],["warn","Heures de peinture supérieures à la grille (3,5 h vs 2,5 h)"]]},
+  {"ref":"DOS-2611-013","client":"Mme Lefèbvre","veh":"Peugeot 308 · EF-882-GH","expert":"Auto Expert 13","assureur":"AXA","statut":"alerte","montant":1960,"mo":9,"sem":"il y a 1 h",
+   "postes":[["Porte arrière gauche",780,780],["Optique arrière",340,340],["Main d'œuvre tôlerie",9,9]],
+   "alertes":[["warn","Poste « Montant de custode » absent du devis alors que le constat atelier le mentionne"]]},
+  {"ref":"DOS-2611-011","client":"M. Roux","veh":"Citroën C3 · IJ-451-KL","expert":"Cabinet Expertis Sud","assureur":"Groupama","statut":"valide","montant":1320,"mo":6,"sem":"hier",
+   "postes":[["Pare-chocs arrière",510,510],["Peinture",340,340],["Main d'œuvre tôlerie",6,6]],
+   "alertes":[["ok","Aucun écart avec le constat atelier ni avec la grille de contrôle"]]},
+  {"ref":"DOS-2611-010","client":"Mme Benali","veh":"Dacia Sandero · MN-307-OP","expert":"Eurexpert Provence","assureur":"Allianz","statut":"conteste","montant":3510,"mo":18,"sem":"hier",
+   "postes":[["Capot",690,690],["Aile avant gauche",540,540],["Main d'œuvre tôlerie",18,12],["Peinture",880,880]],
+   "alertes":[["ko","Main d'œuvre : 18 h au devis contre 12 h au constat atelier"]]},
+  {"ref":"DOS-2611-009","client":"M. Fabre","veh":"Toyota Yaris · QR-129-ST","expert":"Auto Expert 13","assureur":"MMA","statut":"avis","montant":2275,"mo":11,"sem":"il y a 2 jours",
+   "postes":[["Hayon",830,830],["Feu arrière",295,295],["Main d'œuvre tôlerie",11,11],["Peinture",610,610]],
+   "alertes":[["warn","Pièce de réemploi proposée : à confirmer techniquement par le chef d'atelier"]]},
+  {"ref":"DOS-2610-027","client":"M. Navarro","veh":"Ford Fiesta · UV-640-WX","expert":"Eurexpert Provence","assureur":"Matmut","statut":"valide","montant":980,"mo":4,"sem":"il y a 3 jours",
+   "postes":[["Rétroviseur",210,210],["Peinture",290,290],["Main d'œuvre tôlerie",4,4]],
+   "alertes":[["ok","Aucun écart détecté, devis conforme"]]}
+ ],
+ "scenarios":[
+  {"client":"M. Moreau","veh":"VW Golf 7 · YZ-731-AA","expert":"Cabinet Expertis Sud","assureur":"MAIF","statut":"alerte","montant":3120,"mo":15,
+   "postes":[["Porte avant droite",720,720],["Bas de caisse",460,460],["Main d'œuvre tôlerie",15,15],["Peinture",640,910]],
+   "alertes":[["ko","Peinture : 910 € au devis contre 640 € au constat atelier (+270 €)"]]},
+  {"client":"Mme Pons","veh":"Renault Captur · BC-118-DE","expert":"Auto Expert 13","assureur":"AXA","statut":"alerte","montant":1745,"mo":8,"sem":"",
+   "postes":[["Pare-chocs avant",430,430],["Calandre",190,190],["Main d'œuvre tôlerie",8,8]],
+   "alertes":[["warn","Radar de recul non chiffré alors qu'il est signalé au constat atelier"]]},
+  {"client":"M. Caron","veh":"Peugeot 208 · FG-902-HI","expert":"Eurexpert Provence","assureur":"Groupama","statut":"alerte","montant":2410,"mo":10,"sem":"",
+   "postes":[["Aile arrière droite",660,660],["Main d'œuvre tôlerie",10,10],["Peinture",570,570],["Forfait fournitures",160,310]],
+   "alertes":[["warn","Forfait fournitures : 310 € contre 160 € habituellement admis"]]},
+  {"client":"Mme Idrissi","veh":"Fiat 500 · JK-273-LM","expert":"Cabinet Expertis Sud","assureur":"Allianz","statut":"valide","montant":890,"mo":3,"sem":"",
+   "postes":[["Pare-chocs arrière",390,390],["Peinture",260,260],["Main d'œuvre tôlerie",3,3]],
+   "alertes":[["ok","Aucun écart avec le constat atelier ni avec la grille de contrôle"]]},
+  {"client":"M. Blanc","veh":"Audi A3 · NP-584-QR","expert":"Auto Expert 13","assureur":"MMA","statut":"alerte","montant":4260,"mo":20,"sem":"",
+   "postes":[["Capot",880,880],["Aile avant gauche",590,590],["Main d'œuvre tôlerie",20,14],["Peinture",1010,1010]],
+   "alertes":[["ko","Main d'œuvre : 20 h au devis contre 14 h au constat atelier"],["warn","Véhicule de prêt à prévoir : immobilisation supérieure à 5 jours"]]}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var data = JSON.parse(document.getElementById('mock-data').textContent);
+  var devis = [], scen = 0, filtre = 'all', ouvert = null, nextNum = 15;
+  var statuts = {
+    alerte:{lab:'Alerte à examiner',cls:'warn',p:'p-warn'},
+    avis:{lab:'Avis chef d\'atelier',cls:'info',p:'p-info'},
+    valide:{lab:'Validé',cls:'ok',p:'p-ok'},
+    conteste:{lab:'Contesté',cls:'ko',p:'p-ko'}
+  };
+  var base = {tempsParDevis:12, erreurs:0};
+
+  data.initial.forEach(function(d){ devis.push(copie(d)); });
+
+  function copie(o){ return JSON.parse(JSON.stringify(o)); }
+  function eur(n){ return n.toLocaleString('fr-FR')+' €'; }
+  function toast(msg){
+    var t=document.getElementById('toast'); t.textContent=msg; t.classList.add('show');
+    clearTimeout(toast.h); toast.h=setTimeout(function(){t.classList.remove('show');},2600);
+  }
+  function ecartTotal(d){
+    var s=0; d.postes.forEach(function(p){ if(p[2]!==p[1]) s+= (p[2]-p[1]) * (/main d/i.test(p[0])?55:1); });
+    return s;
+  }
+  function traite(d){ return d.statut==='valide'||d.statut==='conteste'; }
+
+  function kpis(){
+    var n=devis.length;
+    var traites=devis.filter(traite).length;
+    var alertes=devis.filter(function(d){return d.alertes.some(function(a){return a[0]!=='ok';});}).length;
+    var econo=0;
+    devis.forEach(function(d){ if(d.statut==='conteste'||d.statut==='valide'){ var e=ecartTotal(d); if(e>0&&d.statut==='conteste') econo+=e; } });
+    var heures=(n*10/60);
+    var html=[
+      ['Devis analysés ce mois',String(n+19),'sur 25 dossiers par mois (objectif 32)'],
+      ['Écarts détectés avant validation',String(alertes+11),'erreurs signalées à l\'humain'],
+      ['Reprises évitées',String(Math.max(1,Math.round((alertes+11)*0.6))),'estimation du mois'],
+      ['Temps de contrôle économisé',(1.3+heures/4).toFixed(1).replace('.',',')+' h/sem','par rapport à la lecture manuelle'],
+      ['Montant contesté à bon droit',eur(1840+econo),'écarts corrigés avec l\'expert'],
+      ['Devis en attente de décision',String(devis.length-traites),'décision : Marie ou chef d\'atelier']
+    ];
+    var c=document.getElementById('kpis'); c.innerHTML='';
+    html.forEach(function(k){
+      var div=document.createElement('div'); div.className='kpi';
+      div.innerHTML='<div class="v">'+k[1]+'</div><div class="l"><b>'+k[0]+'</b><br>'+k[2]+'</div>';
+      c.appendChild(div);
+    });
+  }
+  function bump(){
+    var vs=document.querySelectorAll('.kpi .v');
+    vs.forEach(function(v){ v.classList.add('bump'); setTimeout(function(){v.classList.remove('bump');},400); });
+  }
+
+  function visible(d){
+    if(filtre==='todo') return !traite(d);
+    if(filtre==='done') return traite(d);
+    if(filtre==='alert') return d.alertes.some(function(a){return a[0]!=='ok';});
+    return true;
+  }
+
+  function liste(nouveau){
+    var l=document.getElementById('list'); l.innerHTML='';
+    var vus=devis.filter(visible);
+    if(!vus.length){ l.innerHTML='<div class="empty">Aucun devis ne correspond à ce filtre.</div>'; return; }
+    vus.forEach(function(d){
+      var st=statuts[d.statut];
+      var el=document.createElement('div');
+      el.className='item s-'+st.cls+(ouvert===d.ref?' open':'')+(nouveau===d.ref?' new':'');
+      var nb=d.alertes.filter(function(a){return a[0]!=='ok';}).length;
+      var h=document.createElement('div'); h.className='head';
+      h.innerHTML='<span class="chev">&#9654;</span><span class="ref">'+d.ref+'</span>'+
+        '<span class="title">'+d.client+' · '+d.veh+'<small>'+d.expert+' · '+d.assureur+' · reçu '+(d.sem||'à l\'instant')+(nb?' · '+nb+' alerte'+(nb>1?'s':''):'')+'</small></span>'+
+        '<span class="amount">'+eur(d.montant)+'</span><span class="pill '+st.p+'">'+st.lab+'</span>';
+      h.addEventListener('click',function(){ ouvert=(ouvert===d.ref?null:d.ref); liste(); });
+      el.appendChild(h);
+      var b=document.createElement('div'); b.className='body';
+      var rows=d.postes.map(function(p){
+        var ecart=p[2]-p[1]; var mo=/main d/i.test(p[0]);
+        var unit=mo?' h':' €';
+        var cls=ecart!==0?' style="color:#b91c1c;font-weight:600"':'';
+        return '<tr><td>'+p[0]+'</td><td class="r">'+p[1]+unit+'</td><td class="r"'+cls+'>'+p[2]+unit+'</td></tr>';
+      }).join('');
+      var al=d.alertes.map(function(a){
+        var ic=a[0]==='ok'?'&#10003;':(a[0]==='ko'?'&#9888;':'&#33;');
+        return '<div class="alert a-'+a[0]+'"><span>'+ic+'</span><span>'+a[1]+'</span></div>';
+      }).join('');
+      var act='';
+      if(!traite(d)){
+        act='<div class="actions"><span class="lab">Votre décision :</span>'+
+          '<button class="b-ok" data-a="valide">Valider le devis</button>'+
+          '<button class="b-ko" data-a="conteste">Contester auprès de l\'expert</button>'+
+          (d.statut!=='avis'?'<button class="b-warn" data-a="avis">Demander l\'avis du chef d\'atelier</button>':'')+'</div>';
+      } else {
+        act='<div class="actions"><span class="lab">Décision enregistrée et reportée dans l\'Excel de suivi.</span><button data-a="rouvrir">Rouvrir le dossier</button></div>';
+      }
+      b.innerHTML='<div class="grid"><div class="box"><h4>Devis de l\'expert vs constat atelier</h4><table><tr><th>Poste</th><th class="r">Constat</th><th class="r">Devis</th></tr>'+rows+'</table></div>'+
+        '<div class="box"><h4>Fiche d\'alertes (grille de contrôle)</h4>'+al+'<div class="note">L\'IA signale, la décision reste humaine.</div></div></div>'+act;
+      b.querySelectorAll('button[data-a]').forEach(function(btn){
+        btn.addEventListener('click',function(e){
+          e.stopPropagation();
+          var a=btn.getAttribute('data-a');
+          if(a==='rouvrir'){ d.statut='alerte'; toast(d.ref+' : dossier rouvert'); }
+          else { d.statut=a; toast(d.ref+' : '+statuts[a].lab.toLowerCase()+' · suivi Excel mis à jour'); }
+          kpis(); liste();
+        });
+      });
+      el.appendChild(b);
+      l.appendChild(el);
+    });
+  }
+
+  document.querySelectorAll('.filter').forEach(function(b){
+    b.addEventListener('click',function(){
+      document.querySelectorAll('.filter').forEach(function(x){x.classList.remove('active');});
+      b.classList.add('active'); filtre=b.getAttribute('data-f'); liste();
+    });
+  });
+
+  document.getElementById('demoBtn').addEventListener('click',function(){
+    var s=copie(data.scenarios[scen % data.scenarios.length]); scen++;
+    s.ref='DOS-2611-0'+(nextNum++); s.sem='';
+    devis.unshift(s);
+    filtre='all';
+    document.querySelectorAll('.filter').forEach(function(x){x.classList.toggle('active',x.getAttribute('data-f')==='all');});
+    ouvert=s.ref;
+    kpis(); liste(s.ref); bump();
+    toast('Devis reçu de '+s.expert+' · analysé automatiquement');
+  });
+
+  kpis(); liste();
+})();
+</script>
+</body>
+</html>
