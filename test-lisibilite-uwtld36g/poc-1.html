@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POC – Relance automatisée des experts sur les dossiers sinistres</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1c2733;--mut:#6a7787;--line:#dfe4ea;--acc:#1f5fa8;--acc2:#e8f0fa;--ok:#1f8a4c;--okb:#e3f4ea;--wa:#b9770e;--wab:#fcf1dc;--ko:#b3261e;--kob:#fbe5e3;--in:#5b4fb3;--inb:#ece9fa}
+*{box-sizing:border-box}
+body{margin:0;font-family:Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:#14263b;color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+header h1{margin:0;font-size:18px;font-weight:600}
+header .sub{font-size:13px;color:#b9c8da}
+header .badge{background:var(--acc);padding:4px 10px;border-radius:14px;font-size:12px}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--acc)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--acc);transition:transform .3s}
+.kpi .v.bump{transform:scale(1.15)}
+.kpi .l{font-size:12px;color:var(--mut);margin-top:2px}
+.kpi .d{font-size:11px;color:var(--ok);margin-top:4px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin-bottom:12px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(31,95,168,.3)}
+.btn:hover{background:#174d8b}
+.btn.sm{padding:6px 12px;font-size:12px;box-shadow:none}
+.btn.ghost{background:#fff;color:var(--acc);border:1px solid var(--acc)}
+.btn.ghost:hover{background:var(--acc2)}
+.btn.ko{background:#fff;color:var(--ko);border:1px solid var(--ko)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:16px;padding:5px 12px;font-size:12px;cursor:pointer;color:var(--mut)}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.panel h2{margin:0;padding:12px 16px;font-size:15px;border-bottom:1px solid var(--line);background:#fafbfc}
+.item{border-bottom:1px solid var(--line)}
+.item:last-child{border-bottom:0}
+.row{display:grid;grid-template-columns:90px 1fr auto;gap:12px;padding:12px 16px;cursor:pointer;align-items:center}
+.row:hover{background:#f8fafc}
+.ref{font-weight:700;font-size:13px;color:var(--acc)}
+.t{font-size:14px;font-weight:600}
+.s{font-size:12px;color:var(--mut)}
+.st{font-size:11px;font-weight:700;padding:4px 10px;border-radius:12px;white-space:nowrap}
+.st.att{background:var(--wab);color:var(--wa)}
+.st.val{background:var(--inb);color:var(--in)}
+.st.env{background:var(--acc2);color:var(--acc)}
+.st.rep{background:var(--okb);color:var(--ok)}
+.st.esc{background:var(--kob);color:var(--ko)}
+.detail{display:none;padding:4px 16px 16px 16px;background:#fafbfc}
+.item.open .detail{display:block}
+.mail{background:#fff;border:1px solid var(--line);border-left:3px solid var(--acc);border-radius:6px;padding:10px 12px;font-size:13px;white-space:pre-line;margin:8px 0}
+.meta{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;font-size:12px;margin-bottom:6px}
+.meta b{display:block;color:var(--mut);font-weight:600;font-size:11px;text-transform:uppercase}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.new{animation:pop .7s ease}
+@keyframes pop{0%{opacity:0;transform:translateY(-14px);background:#d6e6fa}100%{opacity:1;transform:none;background:transparent}}
+.empty{padding:24px;text-align:center;color:var(--mut);font-size:13px}
+footer{text-align:center;font-size:12px;color:var(--mut);padding:16px}
+.toast{position:fixed;bottom:20px;right:20px;background:#14263b;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .3s;pointer-events:none;max-width:300px}
+.toast.on{opacity:1}
+@media(max-width:600px){.row{grid-template-columns:1fr auto}.row .ref{grid-column:1/-1}}
+</style>
+</head>
+<body>
+<header>
+ <div>
+  <h1>TEST Lisibilite – Relance des experts</h1>
+  <div class="sub">Gestion des sinistres · Poste de Marie (secrétariat)</div>
+ </div>
+ <span class="badge">Niveau 3 · l'IA prépare, Marie valide</span>
+</header>
+<main>
+ <section class="kpis" id="kpis"></section>
+ <div class="bar">
+  <div class="filters" id="filters"></div>
+  <button class="btn" id="sim">✉ Simuler un dossier sinistre sans réponse</button>
+ </div>
+ <section class="panel">
+  <h2>Dossiers sinistres suivis – relances d'experts</h2>
+  <div id="list"></div>
+ </section>
+</main>
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "initial":[
+  {"ref":"SIN-2418","client":"M. Garnier","veh":"Peugeot 308","expert":"Cabinet Expertis Auto","jours":6,"statut":"att","motif":"Rapport d'expertise non reçu"},
+  {"ref":"SIN-2421","client":"Mme Lefèvre","veh":"Renault Clio V","expert":"M. Durand (expert)","jours":4,"statut":"val","motif":"Passage de l'expert à confirmer"},
+  {"ref":"SIN-2405","client":"M. Benali","veh":"Citroën C3","expert":"Cabinet Expertis Auto","jours":9,"statut":"esc","motif":"2 relances sans réponse"},
+  {"ref":"SIN-2397","client":"Mme Moreau","veh":"Toyota Yaris","expert":"Mme Roussel (expert)","jours":3,"statut":"env","motif":"Chiffrage en attente de validation"},
+  {"ref":"SIN-2389","client":"M. Petit","veh":"Dacia Sandero","expert":"M. Durand (expert)","jours":2,"statut":"rep","motif":"Accord de réparation reçu"},
+  {"ref":"SIN-2412","client":"M. Roche","veh":"Ford Fiesta","expert":"Cabinet Expertis Auto","jours":5,"statut":"att","motif":"Rapport d'expertise non reçu"},
+  {"ref":"SIN-2426","client":"Mme Faure","veh":"Volkswagen Polo","expert":"Mme Roussel (expert)","jours":7,"statut":"val","motif":"Complément de pièces demandé"}
+ ],
+ "scenarios":[
+  {"client":"M. Lambert","veh":"Renault Captur","expert":"Cabinet Expertis Auto","jours":5,"motif":"Rapport d'expertise non reçu"},
+  {"client":"Mme Girard","veh":"Peugeot 208","expert":"M. Durand (expert)","jours":6,"motif":"Passage de l'expert non confirmé"},
+  {"client":"M. Chevalier","veh":"Opel Corsa","expert":"Mme Roussel (expert)","jours":4,"motif":"Chiffrage de choc arrière en attente"},
+  {"client":"Mme Bonnet","veh":"Fiat 500","expert":"Cabinet Expertis Auto","jours":8,"motif":"Accord de prise en charge manquant"},
+  {"client":"M. Marchand","veh":"Skoda Fabia","expert":"M. Durand (expert)","jours":3,"motif":"Photos du choc à valider par l'expert"}
+ ]
+}
+</script>
+
+<script>
+(function(){
+ var DATA=JSON.parse(document.getElementById('mock-data').textContent);
+ var LBL={att:'À relancer',val:'Brouillon à valider',env:'Relance envoyée',rep:'Expert a répondu',esc:'Alerte non-réponse'};
+ var items=DATA.initial.map(function(x,i){x.id=i+1;return x});
+ var nextId=items.length+1, scIdx=0, simCount=0, filter='all', openId=null, newId=null;
+ var base={heures:1.5,relances:18,reponse:62};
+ var sentCount=0, repCount=0;
+
+ function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+ function draft(it){
+  return 'Objet : Dossier '+it.ref+' – '+it.veh+' – relance\n\nBonjour,\n\nSauf erreur de ma part, nous n\'avons pas encore reçu votre retour concernant le dossier sinistre '+it.ref+' ('+it.client+', '+it.veh+') : '+it.motif.toLowerCase()+'.\nPourriez-vous nous indiquer où en est ce dossier ? Le véhicule est immobilisé chez nous et chaque jour compte pour le client.\n\nMerci d\'avance,\nMarie – TEST Lisibilite';
+ }
+ function toast(m){var t=document.getElementById('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast.h);toast.h=setTimeout(function(){t.classList.remove('on')},2200)}
+
+ function count(s){return items.filter(function(i){return i.statut===s}).length}
+ function kpis(bump){
+  var h=(base.heures+sentCount*0.08).toFixed(1).replace('.',',');
+  var total=base.relances+sentCount;
+  var tx=Math.min(95,base.reponse+repCount*2);
+  var k=[
+   {v:h+' h',l:'Temps sauvé cette semaine',d:'≈ 1,5 h/semaine visées (estimation)'},
+   {v:total,l:'Relances d\'experts traitées ce mois',d:'sur 25 dossiers attendus / mois'},
+   {v:'< 5 min',l:'Temps par relance',d:'au lieu de 20 min'},
+   {v:tx+' %',l:'Experts ayant répondu après relance',d:'dossiers sinistres débloqués'},
+   {v:count('esc'),l:'Alertes non-réponse en cours',d:'à traiter par Marie'}
+  ];
+  var el=document.getElementById('kpis');
+  el.innerHTML=k.map(function(x,i){return '<div class="kpi"><div class="v'+(bump&&i<2?' bump':'')+'">'+x.v+'</div><div class="l">'+x.l+'</div><div class="d">'+x.d+'</div></div>'}).join('');
+  if(bump){setTimeout(function(){var v=el.querySelectorAll('.v');for(var i=0;i<v.length;i++)v[i].classList.remove('bump')},350)}
+ }
+ function filters(){
+  var f=[['all','Tous'],['att','À relancer'],['val','À valider'],['env','Envoyées'],['esc','Alertes'],['rep','Répondu']];
+  document.getElementById('filters').innerHTML=f.map(function(x){
+   var n=x[0]==='all'?items.length:count(x[0]);
+   return '<span class="chip'+(filter===x[0]?' on':'')+'" data-f="'+x[0]+'">'+x[1]+' ('+n+')</span>'}).join('');
+ }
+ function actions(it){
+  var a='';
+  if(it.statut==='att')a='<button class="btn sm" data-a="gen" data-id="'+it.id+'">Générer le brouillon IA</button>';
+  else if(it.statut==='val')a='<button class="btn sm" data-a="send" data-id="'+it.id+'">✔ Valider et envoyer</button> <button class="btn sm ghost" data-a="edit" data-id="'+it.id+'">Corriger</button>';
+  else if(it.statut==='env')a='<button class="btn sm ghost" data-a="rep" data-id="'+it.id+'">Marquer « expert a répondu »</button> <button class="btn sm ko" data-a="esc" data-id="'+it.id+'">Pas de réponse</button>';
+  else if(it.statut==='esc')a='<button class="btn sm" data-a="gen" data-id="'+it.id+'">Préparer une 2e relance</button>';
+  else a='<span class="s">Dossier débloqué – aucune action requise.</span>';
+  return a;
+ }
+ function render(){
+  filters();
+  var list=items.filter(function(i){return filter==='all'||i.statut===filter});
+  var el=document.getElementById('list');
+  if(!list.length){el.innerHTML='<div class="empty">Aucun dossier dans cette catégorie.</div>';return}
+  el.innerHTML=list.map(function(it){
+   var isNew=it.id===newId;
+   return '<div class="item'+(openId===it.id?' open':'')+(isNew?' new':'')+'" data-id="'+it.id+'">'+
+    '<div class="row" data-toggle="'+it.id+'"><div class="ref">'+esc(it.ref)+'</div>'+
+    '<div><div class="t">'+esc(it.client)+' – '+esc(it.veh)+'</div><div class="s">'+esc(it.expert)+' · '+esc(it.motif)+' · sans réponse depuis '+it.jours+' j</div></div>'+
+    '<span class="st '+it.statut+'">'+LBL[it.statut]+'</span></div>'+
+    '<div class="detail"><div class="meta"><div><b>Expert</b>'+esc(it.expert)+'</div><div><b>Dossier assurance</b>'+esc(it.ref)+'</div><div><b>Véhicule</b>'+esc(it.veh)+'</div><div><b>Délai sans réponse</b>'+it.jours+' jours</div></div>'+
+    (it.statut==='val'||it.statut==='env'||it.statut==='esc'?'<div class="mail">'+esc(draft(it))+'</div>':'<div class="s">Fil Gmail détecté sans réponse de l\'expert. Aucun brouillon généré pour l\'instant.</div>')+
+    '<div class="actions">'+actions(it)+'</div></div></div>';
+  }).join('');
+  newId=null;
+ }
+ function find(id){for(var i=0;i<items.length;i++)if(items[i].id===id)return items[i];return null}
+
+ document.getElementById('list').addEventListener('click',function(e){
+  var b=e.target.closest('[data-a]');
+  if(b){
+   var it=find(parseInt(b.getAttribute('data-id'),10));if(!it)return;
+   var a=b.getAttribute('data-a');
+   if(a==='gen'){it.statut='val';openId=it.id;toast('Brouillon généré – prêt à être relu par Marie')}
+   else if(a==='send'){it.statut='env';it.jours=0;sentCount++;toast('Relance envoyée à '+it.expert);kpis(true)}
+   else if(a==='edit'){toast('Mode correction : Marie ajuste le texte avant envoi')}
+   else if(a==='rep'){it.statut='rep';repCount++;toast('Dossier '+it.ref+' débloqué');kpis(true)}
+   else if(a==='esc'){it.statut='esc';toast('Alerte créée pour '+it.ref);kpis()}
+   kpis();render();return;
+  }
+  var r=e.target.closest('[data-toggle]');
+  if(r){var id=parseInt(r.getAttribute('data-toggle'),10);openId=(openId===id)?null:id;render()}
+ });
+ document.getElementById('filters').addEventListener('click',function(e){
+  var c=e.target.closest('[data-f]');if(c){filter=c.getAttribute('data-f');render()}
+ });
+ document.getElementById('sim').addEventListener('click',function(){
+  var sc=DATA.scenarios[scIdx%DATA.scenarios.length];scIdx++;simCount++;
+  var it={id:nextId++,ref:'SIN-'+(2430+simCount),client:sc.client,veh:sc.veh,expert:sc.expert,jours:sc.jours,statut:'val',motif:sc.motif};
+  items.unshift(it);filter='all';openId=it.id;newId=it.id;
+  base.heures+=0.1;
+  toast('Dossier détecté : brouillon de relance prêt pour validation');
+  kpis(true);render();
+ });
+ kpis();render();
+})();
+</script>
+</body>
+</html>
