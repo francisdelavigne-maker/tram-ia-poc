@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Suivi des dossiers sinistres – Alerte de non-réponse des experts – TEST Lisibilite</title>
+<style>
+:root{--bg:#f3f5f8;--card:#fff;--ink:#1c2733;--mut:#6a7787;--line:#dfe4ea;--acc:#1f5fbf;--accd:#16478f;--ok:#1e8e5a;--warn:#c77a0a;--bad:#c0392b;--info:#5b6c80}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:#14233a;color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+header h1{font-size:18px;margin:0;font-weight:650}
+header small{display:block;color:#aab8cc;font-weight:400;font-size:12.5px;margin-top:2px}
+.badge-o{background:#1f5fbf;padding:4px 10px;border-radius:20px;font-size:12px}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:12px;margin-bottom:18px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--acc)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--accd);transition:transform .3s}
+.kpi .v.bump{transform:scale(1.15)}
+.kpi .l{font-size:12.5px;color:var(--mut);margin-top:2px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin-bottom:14px}
+.bar .sp{flex:1}
+button{font:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--line);background:#fff;color:var(--ink);padding:7px 12px}
+button:hover{border-color:var(--acc)}
+.btn-main{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600;padding:10px 18px;font-size:15px}
+.btn-main:hover{background:var(--accd)}
+.chip.on{background:var(--acc);color:#fff;border-color:var(--acc)}
+.chip{border-radius:20px;font-size:13px;padding:5px 12px}
+.list{display:flex;flex-direction:column;gap:10px}
+.item{background:var(--card);border:1px solid var(--line);border-left:5px solid var(--info);border-radius:10px;overflow:hidden}
+.item.s-attente{border-left-color:var(--info)}
+.item.s-relance{border-left-color:var(--warn)}
+.item.s-alerte{border-left-color:var(--bad)}
+.item.s-recu{border-left-color:var(--ok)}
+.item.new{animation:pop .7s ease}
+@keyframes pop{0%{opacity:0;transform:translateY(-18px) scale(.97);background:#e7f0ff}100%{opacity:1;transform:none}}
+.head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 14px;cursor:pointer}
+.head .t{flex:1;min-width:220px}
+.head .t b{display:block;font-size:15px}
+.head .t span{font-size:12.5px;color:var(--mut)}
+.st{font-size:12px;font-weight:600;padding:3px 10px;border-radius:20px;color:#fff;white-space:nowrap}
+.st.attente{background:var(--info)}.st.relance{background:var(--warn)}.st.alerte{background:var(--bad)}.st.recu{background:var(--ok)}
+.chev{color:var(--mut);transition:transform .2s}
+.item.open .chev{transform:rotate(90deg)}
+.body{display:none;border-top:1px solid var(--line);padding:14px;background:#fafbfc}
+.item.open .body{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px}
+.grid h4{margin:0 0 4px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:var(--mut)}
+.grid p{margin:0;font-size:14px}
+.draft{margin-top:12px;background:#fff;border:1px dashed var(--acc);border-radius:8px;padding:10px 12px;font-size:13.5px;white-space:pre-wrap}
+.actions{margin-top:12px;display:flex;flex-wrap:wrap;gap:8px}
+.actions button{font-size:13px}
+.empty{text-align:center;color:var(--mut);padding:26px;background:var(--card);border:1px dashed var(--line);border-radius:10px}
+.toast{position:fixed;right:18px;bottom:60px;background:#14233a;color:#fff;padding:10px 16px;border-radius:8px;font-size:14px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;font-size:12.5px;color:var(--mut);padding:16px;border-top:1px solid var(--line);background:#fff}
+@media(max-width:600px){header h1{font-size:16px}.kpi .v{font-size:22px}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>TEST Lisibilite <small>Relance des experts · alerte de non-réponse · dossiers sinistres</small></h1>
+  </div>
+  <span class="badge-o">Poste : Marie (secrétaire)</span>
+</header>
+<main>
+  <section class="kpis" aria-label="Indicateurs de performance">
+    <div class="kpi"><div class="v" id="k-time">1h30</div><div class="l">sauvées par semaine (estimation)</div></div>
+    <div class="kpi"><div class="v" id="k-rate">100 %</div><div class="l">des dossiers éligibles relancés</div></div>
+    <div class="kpi"><div class="v" id="k-avg">4 min</div><div class="l">par relance (contre 20 min avant)</div></div>
+    <div class="kpi"><div class="v" id="k-open">0</div><div class="l">dossiers sinistres en attente d'expert</div></div>
+    <div class="kpi"><div class="v" id="k-alert">0</div><div class="l">alertes de non-réponse à traiter</div></div>
+    <div class="kpi"><div class="v" id="k-veh">25 → 32</div><div class="l">véhicules / mois : objectif du dirigeant</div></div>
+  </section>
+
+  <section class="bar">
+    <button class="btn-main" id="sim">✉ Simuler une absence de réponse d'expert</button>
+    <div class="sp"></div>
+    <span style="font-size:13px;color:var(--mut)">Filtrer :</span>
+    <button class="chip on" data-f="all">Tous</button>
+    <button class="chip" data-f="attente">En attente</button>
+    <button class="chip" data-f="relance">Relancés</button>
+    <button class="chip" data-f="alerte">Alerte</button>
+    <button class="chip" data-f="recu">Rapport reçu</button>
+  </section>
+
+  <section class="list" id="list"></section>
+</main>
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "initial":[
+  {"ref":"SIN-2041","client":"M. Garnier","veh":"Peugeot 308","expert":"Cabinet Expertis Auto","jours":6,"statut":"alerte","relances":1,"motif":"Rapport d'expertise non reçu après 1 relance. L'expert n'a pas répondu."},
+  {"ref":"SIN-2038","client":"Mme Lefèvre","veh":"Renault Clio V","expert":"M. Roussel, expert","jours":4,"statut":"attente","relances":0,"motif":"Passage de l'expert demandé, aucun retour dans le fil Gmail."},
+  {"ref":"SIN-2035","client":"M. Benali","veh":"Citroën C3","expert":"Cabinet Expertis Auto","jours":5,"statut":"relance","relances":1,"motif":"Relance envoyée hier après validation de Marie, en attente de réponse."},
+  {"ref":"SIN-2029","client":"Mme Moreau","veh":"Dacia Duster","expert":"Mme Vidal, expert","jours":3,"statut":"recu","relances":1,"motif":"Rapport d'expertise reçu, chiffrage accordé. Dossier assurance prêt à avancer."},
+  {"ref":"SIN-2044","client":"M. Petit","veh":"Volkswagen Golf","expert":"Expert Ouest Sinistres","jours":7,"statut":"attente","relances":0,"motif":"Devis envoyé à l'expert pour accord, aucun accusé de réception."},
+  {"ref":"SIN-2027","client":"Mme Aubert","veh":"Toyota Yaris","expert":"M. Roussel, expert","jours":8,"statut":"alerte","relances":2,"motif":"Deux relances sans réponse. Choc véhicule bloqué, prêt véhicule toujours en cours."},
+  {"ref":"SIN-2022","client":"M. Colin","veh":"Ford Fiesta","expert":"Mme Vidal, expert","jours":2,"statut":"recu","relances":1,"motif":"Accord de l'expert reçu pour les travaux de carrosserie. Réparation planifiée."}
+ ],
+ "scenarios":[
+  {"client":"M. Marchand","veh":"Renault Captur","expert":"Cabinet Expertis Auto","jours":5,"motif":"Aucune réponse de l'expert sur le chiffrage du choc véhicule."},
+  {"client":"Mme Dupuis","veh":"Peugeot 208","expert":"Expert Ouest Sinistres","jours":6,"motif":"Passage de l'expert non confirmé, le client demande où en est sa voiture."},
+  {"client":"M. Lopez","veh":"Opel Corsa","expert":"M. Roussel, expert","jours":4,"motif":"Rapport d'expertise attendu pour valider le dossier assurance."},
+  {"client":"Mme Faure","veh":"Citroën C4","expert":"Mme Vidal, expert","jours":7,"motif":"Devis complémentaire envoyé, l'expert n'a pas accusé réception."},
+  {"client":"M. Girard","veh":"Fiat 500","expert":"Cabinet Expertis Auto","jours":5,"motif":"Photos du choc transmises, aucun retour sur l'accord de réparation."}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var data = JSON.parse(document.getElementById('mock-data').textContent);
+  var items = [], filter = 'all', cursor = 0, counter = 2050, relanceCount = 0, base = 25;
+  var labels = {attente:'En attente expert', relance:'Relance envoyée', alerte:'Alerte : non-réponse', recu:'Rapport reçu'};
+  var listEl = document.getElementById('list'), toastEl = document.getElementById('toast');
+
+  data.initial.forEach(function(d){ items.push(clone(d)); });
+
+  function clone(o){ return JSON.parse(JSON.stringify(o)); }
+
+  function draftText(it){
+    return 'Objet : Dossier ' + it.ref + ' – relance rapport d\'expertise\n\nBonjour,\n\nNous revenons vers vous au sujet du dossier ' + it.ref + ' (' + it.veh + ', client ' + it.client + '), sans réponse depuis ' + it.jours + ' jours.\nPouvez-vous nous confirmer la date de passage ou nous transmettre votre rapport afin de poursuivre la réparation ?\n\nCordialement,\nMarie – Secrétariat';
+  }
+
+  function toast(msg){
+    toastEl.textContent = msg; toastEl.classList.add('show');
+    clearTimeout(toast.t); toast.t = setTimeout(function(){ toastEl.classList.remove('show'); }, 2300);
+  }
+
+  function bump(id, val){
+    var e = document.getElementById(id);
+    if(e.textContent !== val){ e.textContent = val; e.classList.add('bump'); setTimeout(function(){ e.classList.remove('bump'); }, 300); }
+  }
+
+  function updateKpis(){
+    var open = items.filter(function(i){ return i.statut === 'attente' || i.statut === 'relance' || i.statut === 'alerte'; }).length;
+    var alerts = items.filter(function(i){ return i.statut === 'alerte'; }).length;
+    var total = items.length;
+    var done = items.filter(function(i){ return i.statut !== 'attente'; }).length;
+    var mins = (1.5 + relanceCount * 0.06);
+    var h = Math.floor(mins), m = Math.round((mins - h) * 60);
+    bump('k-time', h + 'h' + (m < 10 ? '0' : '') + m);
+    bump('k-rate', Math.round(done / total * 100) + ' %');
+    bump('k-open', String(open));
+    bump('k-alert', String(alerts));
+    bump('k-avg', '4 min');
+    var veh = Math.min(32, base + Math.floor(relanceCount / 2));
+    bump('k-veh', veh + ' → 32');
+  }
+
+  function render(newRef){
+    var shown = items.filter(function(i){ return filter === 'all' || i.statut === filter; });
+    listEl.innerHTML = '';
+    if(!shown.length){ listEl.innerHTML = '<div class="empty">Aucun dossier pour ce filtre.</div>'; updateKpis(); return; }
+    shown.forEach(function(it){
+      var el = document.createElement('div');
+      el.className = 'item s-' + it.statut + (it.open ? ' open' : '') + (it.ref === newRef ? ' new' : '');
+      el.innerHTML =
+        '<div class="head"><span class="chev">▶</span><div class="t"><b>' + it.ref + ' · ' + it.veh + ' · ' + it.client + '</b>' +
+        '<span>Expert : ' + it.expert + ' · sans réponse depuis ' + it.jours + ' j · ' + it.relances + ' relance(s)</span></div>' +
+        '<span class="st ' + it.statut + '">' + labels[it.statut] + '</span></div>' +
+        '<div class="body"><div class="grid">' +
+        '<div><h4>Situation</h4><p>' + it.motif + '</p></div>' +
+        '<div><h4>Expert concerné</h4><p>' + it.expert + '</p></div>' +
+        '<div><h4>Suivi des relances</h4><p>' + it.relances + ' relance(s) envoyée(s)</p></div></div>' +
+        '<div class="draft">' + draftText(it) + '</div>' +
+        '<div class="actions"></div></div>';
+      el.querySelector('.head').addEventListener('click', function(){ it.open = !it.open; render(); });
+      var act = el.querySelector('.actions');
+      if(it.statut === 'attente' || it.statut === 'alerte'){
+        addBtn(act, '✔ Valider et envoyer la relance', function(){ it.statut = 'relance'; it.relances++; it.jours = 0; relanceCount++; toast('Relance envoyée à l\'expert pour ' + it.ref); render(); });
+      }
+      if(it.statut === 'relance'){
+        addBtn(act, '⚠ Signaler non-réponse', function(){ it.statut = 'alerte'; it.jours = 3; toast('Alerte créée pour ' + it.ref); render(); });
+      }
+      if(it.statut !== 'recu'){
+        addBtn(act, '📄 Rapport reçu', function(){ it.statut = 'recu'; toast('Dossier ' + it.ref + ' débloqué'); render(); });
+      }
+      listEl.appendChild(el);
+    });
+    updateKpis();
+  }
+
+  function addBtn(parent, txt, fn){
+    var b = document.createElement('button'); b.textContent = txt;
+    b.addEventListener('click', function(e){ e.stopPropagation(); fn(); });
+    parent.appendChild(b);
+  }
+
+  document.querySelectorAll('.chip').forEach(function(c){
+    c.addEventListener('click', function(){
+      document.querySelectorAll('.chip').forEach(function(x){ x.classList.remove('on'); });
+      c.classList.add('on'); filter = c.getAttribute('data-f'); render();
+    });
+  });
+
+  document.getElementById('sim').addEventListener('click', function(){
+    var sc = data.scenarios[cursor % data.scenarios.length]; cursor++;
+    counter++;
+    var it = clone(sc); it.ref = 'SIN-' + counter; it.statut = 'alerte'; it.relances = 0; it.open = true;
+    items.unshift(it);
+    filter = 'all';
+    document.querySelectorAll('.chip').forEach(function(x){ x.classList.toggle('on', x.getAttribute('data-f') === 'all'); });
+    render(it.ref);
+    toast('Alerte : aucune réponse de ' + it.expert + ' (' + it.ref + ')');
+    window.scrollTo({top:0, behavior:'smooth'});
+  });
+
+  render();
+})();
+</script>
+</body>
+</html>
