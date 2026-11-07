@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>POC – Suivi des dossiers sinistres et délai de clôture – TEST Lisibilite</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#1d2733;--mut:#6b7785;--line:#e1e6ed;--acc:#1f5fbf;--acc2:#e8f0fc;--ok:#1e8e5a;--warn:#c77a00;--bad:#c0392b;--info:#5b6bbf}
+*{box-sizing:border-box}
+body{margin:0;font-family:system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+header{background:#14233a;color:#fff;padding:14px 24px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px}
+header h1{font-size:18px;margin:0;font-weight:650}
+header .sub{font-size:13px;color:#aebbd0}
+.badge{background:var(--acc);color:#fff;border-radius:999px;padding:4px 12px;font-size:12px;font-weight:600}
+main{max-width:1100px;margin:0 auto;padding:20px 16px 40px}
+h2{font-size:16px;margin:26px 0 10px;color:#14233a}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpi{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;border-top:3px solid var(--acc)}
+.kpi .v{font-size:26px;font-weight:700;color:var(--acc);transition:transform .3s}
+.kpi .v.bump{transform:scale(1.12)}
+.kpi .l{font-size:13px;color:var(--mut);margin-top:2px}
+.kpi .n{font-size:11px;color:var(--mut);margin-top:6px}
+.bar{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between;margin:22px 0 10px}
+.btn{background:var(--acc);color:#fff;border:0;border-radius:8px;padding:11px 18px;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 2px 6px rgba(31,95,191,.3)}
+.btn:hover{background:#174a96}
+.btn:active{transform:translateY(1px)}
+.filters{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:999px;padding:6px 12px;font-size:12.5px;cursor:pointer;color:var(--ink)}
+.chip.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{background:var(--card);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.item.new{animation:pop .6s ease}
+@keyframes pop{0%{opacity:0;transform:translateY(-14px);box-shadow:0 0 0 0 rgba(31,95,191,.5)}60%{opacity:1;box-shadow:0 0 0 8px rgba(31,95,191,.15)}100%{box-shadow:none}}
+.head{display:flex;flex-wrap:wrap;gap:10px;align-items:center;padding:12px 14px;cursor:pointer}
+.head:hover{background:#fafbfd}
+.ref{font-weight:700;font-size:13px;color:#14233a;min-width:82px}
+.title{flex:1;min-width:200px;font-size:14px}
+.title small{display:block;color:var(--mut);font-size:12px}
+.st{font-size:11.5px;font-weight:700;padding:4px 10px;border-radius:999px;white-space:nowrap}
+.s-attente{background:#fdf0d9;color:var(--warn)}
+.s-relance{background:#e5e8f8;color:var(--info)}
+.s-valider{background:var(--acc2);color:var(--acc)}
+.s-recu{background:#dff3e8;color:var(--ok)}
+.s-alerte{background:#fbe3e0;color:var(--bad)}
+.s-clos{background:#e9ecef;color:#4a5560}
+.chev{color:var(--mut);transition:transform .2s;font-size:12px}
+.item.open .chev{transform:rotate(90deg)}
+.body{display:none;border-top:1px solid var(--line);padding:12px 14px;background:#fafbfd;font-size:13.5px}
+.item.open .body{display:block}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px 16px;margin-bottom:10px}
+.grid b{display:block;font-size:11.5px;color:var(--mut);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
+.draft{background:#fff;border:1px dashed #b9c6da;border-radius:8px;padding:10px 12px;font-size:13px;color:#2c3a4b;margin:8px 0;white-space:pre-line}
+.acts{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}
+.b2{border:1px solid var(--acc);background:#fff;color:var(--acc);border-radius:7px;padding:7px 12px;font-size:12.5px;font-weight:600;cursor:pointer}
+.b2:hover{background:var(--acc2)}
+.b2.pri{background:var(--acc);color:#fff}
+.empty{padding:24px;text-align:center;color:var(--mut);background:#fff;border:1px dashed var(--line);border-radius:10px}
+.toast{position:fixed;right:18px;bottom:60px;background:#14233a;color:#fff;padding:10px 16px;border-radius:8px;font-size:13px;opacity:0;transform:translateY(10px);transition:.3s;pointer-events:none;max-width:320px}
+.toast.show{opacity:1;transform:none}
+footer{text-align:center;font-size:12px;color:var(--mut);padding:18px;border-top:1px solid var(--line);background:#fff}
+@media(max-width:600px){.title{min-width:100%}header h1{font-size:16px}}
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>TEST Lisibilite · Suivi des dossiers sinistres</h1>
+    <div class="sub">Délai de clôture et objectif 25 → 32 véhicules par mois</div>
+  </div>
+  <span class="badge">Démo 3 · Pilotage sinistres</span>
+</header>
+
+<main>
+  <h2>Indicateurs de performance</h2>
+  <div class="kpis" id="kpis"></div>
+
+  <div class="bar">
+    <div class="filters" id="filters"></div>
+    <button class="btn" id="sim">✉ Simuler une réponse d'expert entrante</button>
+  </div>
+
+  <h2>Historique des dossiers et événements</h2>
+  <div class="list" id="list"></div>
+</main>
+
+<footer>Démonstration – données fictives – TRAM IA</footer>
+<div class="toast" id="toast"></div>
+
+<script type="application/json" id="mock-data">
+{
+ "base":{"vehicules":25,"objectif":32,"delaiAvant":19,"delaiApres":12,"heures":1.5},
+ "statuts":{"attente":"En attente expert","relance":"Relance envoyée","valider":"Brouillon à valider","recu":"Rapport reçu","alerte":"Alerte non-réponse","clos":"Dossier clos"},
+ "dossiers":[
+  {"ref":"SIN-2041","client":"Mme Lefèvre","veh":"Peugeot 308","expert":"Cabinet Duval Expertises","statut":"valider","jours":6,"note":"Choc arrière, devis transmis à l'expert il y a 6 jours, aucune réponse."},
+  {"ref":"SIN-2038","client":"M. Garnier","veh":"Renault Clio V","expert":"Expertise Morel","statut":"relance","jours":8,"note":"Relance validée par Marie et envoyée. Réponse attendue sous 48 h."},
+  {"ref":"SIN-2035","client":"Mme Benoit","veh":"Citroën C3","expert":"Cabinet Duval Expertises","statut":"recu","jours":5,"note":"Rapport d'expertise reçu : accord de réparation, passage en atelier possible."},
+  {"ref":"SIN-2030","client":"M. Roussel","veh":"Dacia Sandero","expert":"Bureau Arnaud Expert","statut":"alerte","jours":12,"note":"2 relances sans réponse. L'expert doit être rappelé par téléphone."},
+  {"ref":"SIN-2027","client":"Mme Petit","veh":"Toyota Yaris","expert":"Expertise Morel","statut":"attente","jours":2,"note":"Véhicule expertisé hier, rapport attendu. Relance planifiée à J+4."},
+  {"ref":"SIN-2019","client":"M. Faure","veh":"Ford Fiesta","expert":"Bureau Arnaud Expert","statut":"clos","jours":14,"note":"Réparation terminée, véhicule restitué, dossier assurance clôturé."},
+  {"ref":"SIN-2022","client":"Mme Colin","veh":"VW Polo","expert":"Cabinet Duval Expertises","statut":"valider","jours":7,"note":"Pare-chocs et aile avant, complément de devis demandé."}
+ ],
+ "scenarios":[
+  {"client":"M. Marchand","veh":"Audi A3","expert":"Expertise Morel","note":"Réponse de l'expert reçue par mail : rapport joint, accord sur le devis."},
+  {"client":"Mme Dupuis","veh":"Fiat 500","expert":"Bureau Arnaud Expert","note":"L'expert confirme son passage demain matin à l'atelier."},
+  {"client":"M. Noël","veh":"Renault Captur","expert":"Cabinet Duval Expertises","note":"Réponse à la relance : demande une photo complémentaire du choc."},
+  {"client":"Mme Henry","veh":"Opel Corsa","expert":"Expertise Morel","note":"Rapport d'expertise reçu avec réserve sur la main d'œuvre."},
+  {"client":"M. Vidal","veh":"Peugeot 2008","expert":"Bureau Arnaud Expert","note":"L'expert valide le chiffrage : feu vert pour les pièces."}
+ ]
+}
+</script>
+
+<script>
+(function(){
+  var DATA = JSON.parse(document.getElementById('mock-data').textContent);
+  var ST = DATA.statuts;
+  var dossiers = DATA.dossiers.map(function(d){return Object.assign({},d);});
+  var filtre = 'tous';
+  var ouverts = {};
+  var nouveau = null;
+  var idxScen = 0;
+  var cptRef = 2050;
+  var recus = 0;
+
+  function el(id){return document.getElementById(id);}
+  function toast(msg){
+    var t = el('toast'); t.textContent = msg; t.classList.add('show');
+    clearTimeout(toast._t); toast._t = setTimeout(function(){t.classList.remove('show');},2600);
+  }
+
+  function stats(){
+    var actifs = dossiers.filter(function(d){return d.statut!=='clos';}).length;
+    var relances = dossiers.filter(function(d){return d.statut==='relance'||d.statut==='recu'||d.statut==='clos';}).length;
+    var taux = Math.round(100*relances/dossiers.length);
+    var delai = Math.max(DATA.base.delaiApres, DATA.base.delaiAvant - recus);
+    var heures = (DATA.base.heures + recus*0.1).toFixed(1).replace('.',',');
+    var veh = Math.min(DATA.base.objectif, DATA.base.vehicules + Math.floor(recus/2) + 2);
+    return {actifs:actifs,taux:taux,delai:delai,heures:heures,veh:veh};
+  }
+
+  var prev = {};
+  function renderKpis(){
+    var s = stats();
+    var k = [
+      {id:'h',v:s.heures+' h',l:'sauvées par semaine',n:'Relances des experts (estimation)'},
+      {id:'t',v:s.taux+' %',l:'dossiers relancés ou avancés',n:'Objectif : 100 %'},
+      {id:'d',v:s.delai+' j',l:'délai moyen de clôture',n:'Réf. de départ : '+DATA.base.delaiAvant+' j'},
+      {id:'v',v:s.veh+' / '+DATA.base.objectif,l:'véhicules par mois (trajectoire)',n:'Départ : '+DATA.base.vehicules+' véhicules par mois'},
+      {id:'a',v:String(s.actifs),l:'dossiers sinistres actifs',n:'Hors dossiers clos'}
+    ];
+    el('kpis').innerHTML = k.map(function(x){
+      var cls = (prev[x.id]!==undefined && prev[x.id]!==x.v)?' bump':'';
+      prev[x.id] = x.v;
+      return '<div class="kpi"><div class="v'+cls+'">'+x.v+'</div><div class="l">'+x.l+'</div><div class="n">'+x.n+'</div></div>';
+    }).join('');
+  }
+
+  function renderFilters(){
+    var opts = [['tous','Tous']].concat(Object.keys(ST).map(function(k){return [k,ST[k]];}));
+    el('filters').innerHTML = opts.map(function(o){
+      return '<button class="chip'+(filtre===o[0]?' on':'')+'" data-f="'+o[0]+'">'+o[1]+'</button>';
+    }).join('');
+    Array.prototype.forEach.call(el('filters').querySelectorAll('.chip'),function(b){
+      b.onclick = function(){filtre=b.getAttribute('data-f');renderFilters();renderList();};
+    });
+  }
+
+  function brouillon(d){
+    return 'Objet : Dossier '+d.ref+' – '+d.veh+' – relance rapport d\'expertise\n\nBonjour,\nSauf erreur de notre part, nous n\'avons pas reçu votre retour sur le dossier '+d.ref+' ('+d.client+', '+d.veh+'), transmis il y a '+d.jours+' jours.\nPourriez-vous nous communiquer votre rapport afin que nous puissions lancer la réparation ?\n\nCordialement,\nMarie – Secrétariat';
+  }
+
+  function actions(d){
+    var a = [];
+    if(d.statut==='valider') a.push('<button class="b2 pri" data-a="envoyer" data-r="'+d.ref+'">Valider et envoyer la relance</button>');
+    if(d.statut==='attente') a.push('<button class="b2" data-a="brouillon" data-r="'+d.ref+'">Préparer un brouillon de relance</button>');
+    if(d.statut==='relance') a.push('<button class="b2" data-a="recu" data-r="'+d.ref+'">Marquer rapport reçu</button>');
+    if(d.statut==='alerte') a.push('<button class="b2" data-a="valider" data-r="'+d.ref+'">Générer une nouvelle relance</button>');
+    if(d.statut==='recu') a.push('<button class="b2 pri" data-a="clore" data-r="'+d.ref+'">Clôturer le dossier</button>');
+    return a.join('');
+  }
+
+  function renderList(){
+    var l = dossiers.filter(function(d){return filtre==='tous'||d.statut===filtre;});
+    if(!l.length){el('list').innerHTML='<div class="empty">Aucun dossier pour ce filtre.</div>';return;}
+    el('list').innerHTML = l.map(function(d){
+      var open = ouverts[d.ref]?' open':'';
+      var neu = (nouveau===d.ref)?' new':'';
+      var draft = (d.statut==='valider')?'<div class="draft">'+brouillon(d)+'</div>':'';
+      return '<div class="item'+open+neu+'" data-ref="'+d.ref+'">'+
+        '<div class="head" data-t="'+d.ref+'"><span class="ref">'+d.ref+'</span>'+
+        '<span class="title">'+d.client+' · '+d.veh+'<small>Expert : '+d.expert+'</small></span>'+
+        '<span class="st s-'+d.statut+'">'+ST[d.statut]+'</span><span class="chev">▶</span></div>'+
+        '<div class="body"><div class="grid">'+
+        '<div><b>Client</b>'+d.client+'</div><div><b>Véhicule</b>'+d.veh+'</div>'+
+        '<div><b>Expert</b>'+d.expert+'</div><div><b>Ancienneté du dossier</b>'+d.jours+' jours</div></div>'+
+        '<div>'+d.note+'</div>'+draft+'<div class="acts">'+actions(d)+'</div></div></div>';
+    }).join('');
+    Array.prototype.forEach.call(el('list').querySelectorAll('.head'),function(h){
+      h.onclick = function(){var r=h.getAttribute('data-t');ouverts[r]=!ouverts[r];renderList();};
+    });
+    Array.prototype.forEach.call(el('list').querySelectorAll('[data-a]'),function(b){
+      b.onclick = function(e){e.stopPropagation();agir(b.getAttribute('data-r'),b.getAttribute('data-a'));};
+    });
+    nouveau = null;
+  }
+
+  function trouver(ref){for(var i=0;i<dossiers.length;i++){if(dossiers[i].ref===ref)return dossiers[i];}return null;}
+
+  function agir(ref,a){
+    var d = trouver(ref); if(!d) return;
+    if(a==='brouillon'){d.statut='valider';d.note='Brouillon de relance généré, en attente de validation par Marie.';toast('Brouillon prêt pour '+ref);}
+    else if(a==='valider'){d.statut='valider';d.note='Nouvelle relance rédigée, à valider avant envoi.';toast('Nouveau brouillon pour '+ref);}
+    else if(a==='envoyer'){d.statut='relance';d.note='Relance validée par Marie et envoyée à l\'expert.';toast('Relance envoyée (simulation) – '+ref);}
+    else if(a==='recu'){d.statut='recu';d.note='Rapport d\'expertise reçu, dossier prêt à avancer.';recus++;toast('Rapport reçu – '+ref);}
+    else if(a==='clore'){d.statut='clos';d.note='Dossier assurance clôturé, véhicule restitué.';toast('Dossier '+ref+' clôturé');}
+    ouverts[ref]=true;
+    renderKpis();renderFilters();renderList();
+  }
+
+  el('sim').onclick = function(){
+    var s = DATA.scenarios[idxScen % DATA.scenarios.length];
+    idxScen++; cptRef++;
+    var ref = 'SIN-'+cptRef;
+    dossiers.unshift({ref:ref,client:s.client,veh:s.veh,expert:s.expert,statut:'recu',jours:3+(idxScen%5),note:s.note});
+    recus++;
+    nouveau = ref; ouverts[ref] = true; filtre = 'tous';
+    renderKpis();renderFilters();renderList();
+    toast('Nouveau mail d\'expert reçu : '+ref);
+  };
+
+  renderKpis();renderFilters();renderList();
+})();
+</script>
+</body>
+</html>
